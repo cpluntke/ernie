@@ -184,5 +184,4 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
-| 2026-09-13 | Family clue-writing screen deferred; clues and photos seeded | Per 0007: assume content comes in somehow |
 | 2026-09-13 | Created | Brainstorm pick: the most personal word game; retrieval and word-finding signals |
