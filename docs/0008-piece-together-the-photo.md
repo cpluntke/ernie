@@ -95,7 +95,7 @@ it goes forward.
 | Puzzle | assemble | tap piece, tap slot | nothing selected; piece selected; wrong spot (message, piece returns); piece placed; hint shown; complete |
 | Thank you | close | Carry on | completed; stopped early ("We'll keep your pieces for tomorrow") |
 
-Mockups: `docs/assets/0008/` (none yet).
+Mockups: [design canvas](https://claude.ai/code/artifact/af136106-64b8-4f09-9c01-c72566a96102) with four screens (invite, puzzle at 12 pieces on a phone, done, puzzle at 20 pieces on a tablet with a hint shown). Sources in `docs/assets/0008/`; regenerate with `python3 docs/assets/0008/gen.py`.
 
 ### 5.3 Copy and tone
 
@@ -205,5 +205,6 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Mockups drawn on the ernie-ui tokens; 20 tiles stay distinguishable on a tablet, plain-sky tiles are the weak spot | Owner asked to see it |
 | 2026-09-13 | Any photo for the sketch; cap raised to 20 tiles; family photo and recognition question deferred | Owner review |
 | 2026-09-13 | Created | Owner asked for a jigsaw idea; adds visuospatial and strategy signals no other sketch has |
