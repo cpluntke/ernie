@@ -1,0 +1,535 @@
+<title>Piece Together the Photo</title>
+<style>
+  /* ernie-ui tokens, copied from packages/ernie-ui/src/styles.css. Single light theme, as the kit. */
+  :root {
+    --ernie-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --ernie-text: 1.25rem; --ernie-text-lg: 1.5rem; --ernie-heading: 2rem; --ernie-heading-2: 1.5rem;
+    --ernie-ink: #111827; --ernie-ink-soft: #374151; --ernie-paper: #ffffff; --ernie-surface: #f3f4f6;
+    --ernie-border: #4b5563; --ernie-primary: #1e40af; --ernie-primary-ink: #ffffff;
+    --ernie-success: #14532d; --ernie-selected: #dbeafe; --ernie-focus: #111827;
+    --ernie-target: 3.5rem; --ernie-radius: 0.75rem;
+    --ernie-space-1: 0.5rem; --ernie-space-2: 1rem; --ernie-space-3: 1.5rem; --ernie-space-4: 2rem;
+    --ernie-measure: 40rem;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--ernie-paper); color: var(--ernie-ink);
+    font-family: var(--ernie-font); font-size: var(--ernie-text); line-height: 1.5;
+    overscroll-behavior: none;
+  }
+  * { box-sizing: border-box; }
+  :focus-visible { outline: 4px solid var(--ernie-focus); outline-offset: 3px; }
+  button { font: inherit; }
+
+  .app { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+  .topbar {
+    display: flex; align-items: center; gap: var(--ernie-space-2); padding: var(--ernie-space-2);
+    border-bottom: 2px solid var(--ernie-border); background: var(--ernie-paper); flex: 0 0 auto;
+  }
+  .topbar__spacer { flex: 1; }
+  .topbar .btn { white-space: nowrap; padding-inline: var(--ernie-space-2); }
+  .body {
+    flex: 1 1 auto; min-height: 0; width: 100%; max-width: var(--ernie-measure); margin: 0 auto;
+    padding: var(--ernie-space-3) var(--ernie-space-2); display: flex; flex-direction: column;
+  }
+  .body--scroll { overflow-y: auto; }
+  h1 { font-size: var(--ernie-heading); line-height: 1.25; font-weight: 700; margin: 0 0 var(--ernie-space-3); text-wrap: balance; }
+  .puzzle h1 { margin-bottom: var(--ernie-space-2); }
+  .text { margin: 0 0 var(--ernie-space-2); max-width: var(--ernie-measure); }
+  .text--large { font-size: var(--ernie-text-lg); }
+  .status { margin: 0 0 var(--ernie-space-1); font-weight: 700; }
+  .puzzle .text { margin-bottom: var(--ernie-space-1); }
+  .actions {
+    flex: 0 0 auto; background: var(--ernie-paper); border-top: 2px solid var(--ernie-border); padding: var(--ernie-space-2);
+  }
+  .actions__inner { max-width: var(--ernie-measure); margin: 0 auto; display: flex; flex-direction: column; gap: var(--ernie-space-2); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--ernie-space-1);
+    min-height: var(--ernie-target); min-width: var(--ernie-target); padding: var(--ernie-space-2) var(--ernie-space-3);
+    font-size: var(--ernie-text-lg); font-weight: 700; line-height: 1.25; border-radius: var(--ernie-radius);
+    border: 3px solid var(--ernie-primary); background: var(--ernie-primary); color: var(--ernie-primary-ink);
+    cursor: pointer; text-align: center;
+  }
+  .btn--secondary { background: var(--ernie-paper); color: var(--ernie-primary); }
+  .btn--huge { font-size: var(--ernie-heading); min-height: 5rem; padding: var(--ernie-space-3) var(--ernie-space-4); }
+  .btn--full { display: flex; width: 100%; }
+  .btn__icon { font-size: 1.25em; line-height: 1; }
+
+  .choice { border: 0; padding: 0; margin: 0 0 var(--ernie-space-3); }
+  .choice__legend { font-weight: 700; padding: 0; margin-bottom: var(--ernie-space-2); }
+  .choice__options { display: grid; gap: var(--ernie-space-2); grid-template-columns: 1fr; }
+  .choice__option {
+    display: flex; align-items: center; gap: var(--ernie-space-2); min-height: var(--ernie-target);
+    padding: var(--ernie-space-2); font-size: var(--ernie-text-lg); text-align: left; color: var(--ernie-ink);
+    background: var(--ernie-paper); border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); cursor: pointer;
+  }
+  .choice__option[aria-checked="true"] { background: var(--ernie-selected); border-color: var(--ernie-primary); }
+  .choice__mark {
+    flex: 0 0 auto; width: 2rem; height: 2rem; border: 3px solid var(--ernie-border); border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: var(--ernie-primary);
+  }
+  .choice__option[aria-checked="true"] .choice__mark { border-color: var(--ernie-primary); }
+  .choice__text { display: flex; flex-direction: column; }
+  .choice__desc { font-size: var(--ernie-text); color: var(--ernie-ink-soft); }
+
+  .picture { border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); overflow: hidden; margin: 0 0 var(--ernie-space-3); max-width: 100%; }
+  .picture svg { display: block; width: 100%; height: auto; }
+
+  .play { flex: 1 1 auto; min-height: 0; position: relative; }
+  .play svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .piece { cursor: grab; }
+  .piece--locked { cursor: default; }
+  .cluster--dragging .piece__outline { stroke: var(--ernie-primary); stroke-width: 6; }
+  .cluster--dragging { filter: drop-shadow(0 6px 10px rgba(17, 24, 39, 0.35)); }
+
+  .notice {
+    display: flex; gap: var(--ernie-space-2); align-items: flex-start; padding: var(--ernie-space-2);
+    border: 3px solid var(--ernie-success); border-left-width: 0.75rem; border-radius: var(--ernie-radius);
+    background: var(--ernie-surface); margin: 0 0 var(--ernie-space-3);
+  }
+  .notice__icon { font-size: var(--ernie-heading-2); line-height: 1.25; font-weight: 700; }
+  .notice p { margin: 0; }
+  .notice__title { font-weight: 700; }
+
+  details { margin: 0 0 var(--ernie-space-3); color: var(--ernie-ink-soft); }
+  summary { cursor: pointer; min-height: var(--ernie-target); display: flex; align-items: center; font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; font-size: 1rem; }
+  th, td { text-align: left; padding: 0.5rem 0.5rem; border-bottom: 1px solid var(--ernie-border); vertical-align: top; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  [hidden] { display: none !important; }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <button class="btn btn--secondary" id="back" type="button"><span class="btn__icon" aria-hidden="true">←</span><span>Go back</span></button>
+    <span class="topbar__spacer"></span>
+    <button class="btn btn--secondary" id="home" type="button"><span class="btn__icon" aria-hidden="true">⌂</span><span>Start</span></button>
+  </header>
+
+  <!-- Screen 1: invite -->
+  <main class="body body--scroll" id="screen-invite">
+    <h1>Shall we put a picture back together?</h1>
+    <div class="picture"><svg viewBox="0 0 1200 900" role="img" aria-label="A red house by a lake, with a tree, a boat and flowers"><use href="#scene"></use></svg></div>
+    <fieldset class="choice">
+      <legend class="choice__legend">How many pieces?</legend>
+      <div class="choice__options" role="radiogroup" aria-label="How many pieces?" id="count-options">
+        <button type="button" role="radio" aria-checked="true" class="choice__option" data-count="12">
+          <span class="choice__mark" aria-hidden="true">✓</span>
+          <span class="choice__text"><span>12 pieces</span><span class="choice__desc">Good on a phone</span></span>
+        </button>
+        <button type="button" role="radio" aria-checked="false" class="choice__option" data-count="20">
+          <span class="choice__mark" aria-hidden="true"></span>
+          <span class="choice__text"><span>20 pieces</span><span class="choice__desc">Better on a tablet</span></span>
+        </button>
+      </div>
+    </fieldset>
+    <p class="text text--large">There is no hurry. Pieces click into place when they are close.</p>
+  </main>
+
+  <!-- Screen 2: puzzle -->
+  <main class="body puzzle" id="screen-puzzle" hidden>
+    <h1>Finish the picture</h1>
+    <p class="text" id="instruction">Drag a piece onto the picture.</p>
+    <p class="status" id="status"></p>
+    <div class="play">
+      <svg id="play" preserveAspectRatio="xMidYMin meet" aria-label="Jigsaw pieces and the board"></svg>
+    </div>
+  </main>
+
+  <!-- Screen 3: done -->
+  <main class="body body--scroll" id="screen-done" hidden>
+    <h1>You did it!</h1>
+    <div class="picture"><svg viewBox="0 0 1200 900" role="img" aria-label="The finished picture"><use href="#scene"></use></svg></div>
+    <div class="notice" role="status"><span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p id="done-text">All 12 pieces are in place.</p></div></div>
+    <details>
+      <summary>For the demo: what we measured</summary>
+      <p class="text">The person never sees this. It is what the family view would compare with the usual days.</p>
+      <table id="metrics"></table>
+    </details>
+  </main>
+
+  <footer class="actions">
+    <div class="actions__inner">
+      <button class="btn btn--huge btn--full" id="start" type="button">Yes, let's do it</button>
+      <button class="btn btn--secondary btn--full" id="hint" type="button" hidden>Show me where this goes</button>
+      <button class="btn btn--huge btn--full" id="carry-on" type="button" hidden>Carry on</button>
+    </div>
+  </footer>
+</div>
+
+<!-- The stand-in "photo": one drawn scene, reused by every piece through <use>. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec5ff"/><stop offset="1" stop-color="#dff1ff"/></linearGradient>
+    <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa9e6"/><stop offset="1" stop-color="#2f6fb5"/></linearGradient>
+    <symbol id="scene" viewBox="0 0 1200 900">
+      <rect width="1200" height="900" fill="url(#sky)"/>
+      <circle cx="1010" cy="150" r="90" fill="#ffd166"/><circle cx="1010" cy="150" r="115" fill="#ffd166" opacity="0.25"/>
+      <g fill="#ffffff"><ellipse cx="260" cy="170" rx="120" ry="48"/><ellipse cx="330" cy="140" rx="90" ry="55"/><ellipse cx="190" cy="150" rx="70" ry="40"/><ellipse cx="700" cy="120" rx="100" ry="38"/><ellipse cx="760" cy="95" rx="70" ry="42"/></g>
+      <g stroke="#334155" stroke-width="6" fill="none" stroke-linecap="round"><path d="M560 250 q20 -25 40 0 q20 -25 40 0"/><path d="M640 300 q15 -20 30 0 q15 -20 30 0"/></g>
+      <path d="M0 470 Q200 330 420 440 T900 420 T1200 470 V620 H0Z" fill="#a3c98d"/>
+      <path d="M300 500 Q520 380 760 480 T1200 460 V640 H0 V560 Q150 470 300 500Z" fill="#6f9f5a"/>
+      <path d="M0 640 Q400 600 1200 650 V900 H0Z" fill="#4f8a3f"/>
+      <path d="M620 600 Q820 560 1200 610 V690 Q820 720 620 690Z" fill="url(#lake)"/>
+      <g><path d="M840 655 l20 25 h110 l20 -25Z" fill="#8b4513"/><rect x="908" y="590" width="6" height="65" fill="#333"/><path d="M914 592 l60 55 h-60Z" fill="#f8fafc"/></g>
+      <g><rect x="80" y="520" width="34" height="200" fill="#6b4423"/><circle cx="97" cy="470" r="120" fill="#2f7a3d"/><circle cx="40" cy="520" r="80" fill="#3d8f4a"/><circle cx="170" cy="510" r="85" fill="#3d8f4a"/><circle cx="110" cy="400" r="70" fill="#4aa356"/></g>
+      <g><rect x="420" y="480" width="260" height="190" fill="#c8402f"/><path d="M400 480 L550 370 L700 480Z" fill="#7a2e1f"/><rect x="620" y="390" width="34" height="70" fill="#7a2e1f"/>
+        <rect x="525" y="580" width="60" height="90" fill="#f4e4c1"/><circle cx="574" cy="628" r="5" fill="#333"/>
+        <rect x="445" y="510" width="55" height="55" fill="#e0f2fe" stroke="#f4e4c1" stroke-width="6"/><rect x="600" y="510" width="55" height="55" fill="#e0f2fe" stroke="#f4e4c1" stroke-width="6"/>
+        <path d="M445 537 h55 M472 510 v55 M600 537 h55 M627 510 v55" stroke="#f4e4c1" stroke-width="5"/></g>
+      <path d="M560 670 Q520 780 380 900 H700 Q640 780 590 670Z" fill="#e6d3a3"/>
+      <g stroke="#f8fafc" stroke-width="10" stroke-linecap="round"><path d="M760 700 V760 M810 700 V760 M860 700 V760 M910 700 V760 M960 700 V760 M1010 700 V760"/><path d="M740 720 H1030 M740 745 H1030" stroke-width="8"/></g>
+      <g fill="#ffd166"><circle cx="120" cy="790" r="22"/><circle cx="200" cy="830" r="22"/><circle cx="60" cy="860" r="22"/><circle cx="260" cy="780" r="22"/></g>
+      <g fill="#7a3e12"><circle cx="120" cy="790" r="8"/><circle cx="200" cy="830" r="8"/><circle cx="60" cy="860" r="8"/><circle cx="260" cy="780" r="8"/></g>
+      <g stroke="#2f7a3d" stroke-width="8" stroke-linecap="round"><path d="M120 812 v70 M200 852 v48 M60 882 v18 M260 802 v80"/></g>
+      <g fill="#e05780"><circle cx="1060" cy="820" r="18"/><circle cx="1130" cy="860" r="18"/><circle cx="980" cy="870" r="18"/><circle cx="1180" cy="800" r="18"/></g>
+      <g stroke="#2f7a3d" stroke-width="7" stroke-linecap="round"><path d="M1060 838 v50 M1130 878 v22 M980 888 v12 M1180 818 v70"/></g>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+(function () {
+  'use strict';
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var XLINK = 'http://www.w3.org/1999/xlink';
+  var PIC_W = 1200, PIC_H = 900;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = { invite: $('screen-invite'), puzzle: $('screen-puzzle'), done: $('screen-done') };
+  var footer = { start: $('start'), hint: $('hint'), carryOn: $('carry-on') };
+  var play = $('play');
+
+  var pieceCount = 12;
+  var game = null;   // current puzzle state
+  var log = [];      // event log for the demo metrics
+
+  function el(name, attrs, parent) {
+    var n = document.createElementNS(SVG_NS, name);
+    for (var k in attrs) {
+      if (k === 'href') { n.setAttribute('href', attrs[k]); n.setAttributeNS(XLINK, 'xlink:href', attrs[k]); }
+      else n.setAttribute(k, attrs[k]);
+    }
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function now() { return performance.now(); }
+  function record(kind, extra) { var e = { t: Math.round(now()), kind: kind }; for (var k in extra) e[k] = extra[k]; log.push(e); }
+
+  // ---------- jigsaw geometry ----------
+  // Edge profile: a rounded tab. u runs along the edge (0..1 of its length), v is the outward reach in units of s.
+  function edgePath(P0, P1, N, k, s) {
+    var dx = P1.x - P0.x, dy = P1.y - P0.y;
+    var P = function (u, v) { return (P0.x + u * dx + k * v * s * N.x).toFixed(1) + ' ' + (P0.y + u * dy + k * v * s * N.y).toFixed(1); };
+    if (k === 0) return 'L ' + P(1, 0);
+    return 'L ' + P(0.36, 0)
+      + ' C ' + P(0.44, 0) + ' ' + P(0.40, 0.10) + ' ' + P(0.42, 0.16)
+      + ' C ' + P(0.36, 0.20) + ' ' + P(0.32, 0.32) + ' ' + P(0.50, 0.32)
+      + ' C ' + P(0.68, 0.32) + ' ' + P(0.64, 0.20) + ' ' + P(0.58, 0.16)
+      + ' C ' + P(0.60, 0.10) + ' ' + P(0.56, 0) + ' ' + P(0.64, 0)
+      + ' L ' + P(1, 0);
+  }
+  function piecePath(col, row, cw, ch, edges, s) {
+    var x = col * cw, y = row * ch;
+    return 'M ' + x + ' ' + y
+      + ' ' + edgePath({ x: x, y: y }, { x: x + cw, y: y }, { x: 0, y: -1 }, edges.top, s)
+      + ' ' + edgePath({ x: x + cw, y: y }, { x: x + cw, y: y + ch }, { x: 1, y: 0 }, edges.right, s)
+      + ' ' + edgePath({ x: x + cw, y: y + ch }, { x: x, y: y + ch }, { x: 0, y: 1 }, edges.bottom, s)
+      + ' ' + edgePath({ x: x, y: y + ch }, { x: x, y: y }, { x: -1, y: 0 }, edges.left, s)
+      + ' Z';
+  }
+
+  // ---------- build a puzzle ----------
+  function layoutFor(count) { return count === 20 ? { cols: 5, rows: 4 } : { cols: 4, rows: 3 }; }
+
+  function buildGame(count, restore) {
+    var L = layoutFor(count), cols = L.cols, rows = L.rows;
+    var cw = PIC_W / cols, ch = PIC_H / rows, s = Math.min(cw, ch);
+    var M = Math.round(0.4 * s) + 10;                 // margin so tabs never leave the play area
+    var trayTop = M + PIC_H + Math.round(0.4 * s);
+    var trayRows = Math.ceil(count / cols);
+    var PITCH = 0.8;                                   // tray spacing: tabs overlap, bodies barely do
+    var W = PIC_W + 2 * M, H = trayTop + (trayRows - 1) * ch * PITCH + ch + M;
+    var R = 0.45 * s;                                  // magnetic radius, generous on purpose
+
+    // Which side of each internal edge owns the tab.
+    var hEdge = [], vEdge = [];
+    for (var r = 0; r < rows; r++) { hEdge.push([]); vEdge.push([]); for (var c = 0; c < cols; c++) { hEdge[r].push(Math.random() < 0.5 ? 1 : -1); vEdge[r].push(Math.random() < 0.5 ? 1 : -1); } }
+
+    var pieces = [];
+    for (var rr = 0; rr < rows; rr++) for (var cc = 0; cc < cols; cc++) {
+      var edges = {
+        top: rr === 0 ? 0 : (hEdge[rr][cc] === 1 ? -1 : 1),
+        bottom: rr === rows - 1 ? 0 : (hEdge[rr + 1][cc] === 1 ? 1 : -1),
+        left: cc === 0 ? 0 : (vEdge[rr][cc] === 1 ? -1 : 1),
+        right: cc === cols - 1 ? 0 : (vEdge[rr][cc + 1] === 1 ? 1 : -1)
+      };
+      pieces.push({ i: pieces.length, col: cc, row: rr, d: piecePath(cc, rr, cw, ch, edges, s) });
+    }
+
+    play.innerHTML = '';
+    play.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var defs = el('defs', {}, play);
+    pieces.forEach(function (p) { var cp = el('clipPath', { id: 'clip-' + p.i }, defs); el('path', { d: p.d }, cp); });
+
+    // Board: dashed outline plus a faint ghost of the picture so the goal is always visible.
+    el('rect', { x: M, y: M, width: PIC_W, height: PIC_H, fill: '#f3f4f6', stroke: '#4b5563', 'stroke-width': 4, 'stroke-dasharray': '18 12', rx: 8, 'pointer-events': 'none' }, play);
+    var ghost = el('g', { opacity: 0.22, 'pointer-events': 'none' }, play);
+    el('use', { href: '#scene', x: M, y: M, width: PIC_W, height: PIC_H }, ghost);
+    var hintSlot = el('path', { fill: '#dbeafe', stroke: '#1e40af', 'stroke-width': 8, 'pointer-events': 'none', visibility: 'hidden' }, play);
+    var layer = el('g', {}, play);
+
+    // Clusters: every piece starts alone in the tray; the board is a cluster with translate (M, M).
+    var order = pieces.map(function (p) { return p.i; });
+    for (var i = order.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = order[i]; order[i] = order[j]; order[j] = tmp; }
+    var clusters = [];
+    order.forEach(function (pi, n) {
+      var p = pieces[pi];
+      var jitter = function () { return (Math.random() - 0.5) * 0.08 * s; };
+      var tx = M + (n % cols) * cw * PITCH + 0.05 * cw - p.col * cw + jitter();
+      var ty = trayTop + Math.floor(n / cols) * ch * PITCH - p.row * ch + jitter();
+      clusters.push(makeCluster([p], tx, ty, false));
+    });
+    if (restore && restore.clusters) {
+      layer.innerHTML = '';
+      clusters = restore.clusters.map(function (c) { return makeCluster(c.pieces.map(function (i) { return pieces[i]; }), c.tx, c.ty, c.locked); });
+    }
+
+    function makeCluster(ps, tx, ty, locked) {
+      var g = el('g', { 'class': 'cluster' + (locked ? ' cluster--locked' : '') }, layer);
+      var cl = { g: g, pieces: [], tx: tx, ty: ty, locked: locked };
+      ps.forEach(function (p) { addPiece(cl, p); });
+      setT(cl, tx, ty);
+      return cl;
+    }
+    function addPiece(cl, p) {
+      var pg = el('g', { 'class': 'piece' + (cl.locked ? ' piece--locked' : ''), 'data-i': p.i }, cl.g);
+      var img = el('g', { 'clip-path': 'url(#clip-' + p.i + ')' }, pg);
+      el('use', { href: '#scene', x: 0, y: 0, width: PIC_W, height: PIC_H }, img);
+      el('path', { d: p.d, fill: 'none', stroke: '#4b5563', 'stroke-width': 4, 'stroke-linejoin': 'round', 'class': 'piece__outline' }, pg);
+      el('path', { d: p.d, fill: '#000', 'fill-opacity': 0, stroke: 'none' }, pg);   // hit area: the picture inside a <use> is not reliably hit-tested
+      p.node = pg; p.cluster = cl; cl.pieces.push(p);
+    }
+    function setT(cl, tx, ty) { cl.tx = tx; cl.ty = ty; cl.g.setAttribute('transform', 'translate(' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ')'); }
+    function adjacent(a, b) {
+      for (var i = 0; i < a.pieces.length; i++) for (var j = 0; j < b.pieces.length; j++) {
+        var p = a.pieces[i], q = b.pieces[j];
+        if (Math.abs(p.col - q.col) + Math.abs(p.row - q.row) === 1) return true;
+      }
+      return false;
+    }
+    function dist(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+    function merge(into, from) {
+      from.pieces.forEach(function (p) { into.g.appendChild(p.node); p.cluster = into; into.pieces.push(p); if (into.locked) p.node.classList.add('piece--locked'); });
+      from.g.remove();
+      clusters.splice(clusters.indexOf(from), 1);
+    }
+    function lock(cl) {
+      cl.locked = true; setT(cl, M, M); cl.g.classList.add('cluster--locked');
+      cl.pieces.forEach(function (p) { p.node.classList.add('piece--locked'); });
+      layer.insertBefore(cl.g, layer.firstChild);   // locked pieces sit under loose ones
+    }
+    function clamp(cl) {
+      var b = cl.g.getBBox();
+      var tx = Math.min(Math.max(cl.tx, -b.x + 4), W - b.x - b.width - 4);
+      var ty = Math.min(Math.max(cl.ty, -b.y + 4), H - b.y - b.height - 4);
+      setT(cl, tx, ty);
+    }
+    function lockedCount() { var n = 0; clusters.forEach(function (c) { if (c.locked) n += c.pieces.length; }); return n; }
+
+    // ---------- snapping ----------
+    function snap(cl, dragged) {
+      var snapped = false;
+      // 1. onto the board (translate equal to the board's means every piece is on its slot)
+      if (dist(cl.tx, cl.ty, M, M) < R) {
+        lock(cl);
+        // absorb any other locked cluster so the board is one cluster
+        clusters.filter(function (o) { return o !== cl && o.locked; }).forEach(function (o) { merge(cl, o); });
+        record('snap', { piece: dragged.i, to: 'board', pieces: cl.pieces.length });
+        snapped = true;
+      } else {
+        // 2. onto a neighbouring loose cluster
+        var again = true;
+        while (again) {
+          again = false;
+          for (var i = 0; i < clusters.length; i++) {
+            var o = clusters[i];
+            if (o === cl || o.locked) continue;
+            if (adjacent(cl, o) && dist(cl.tx, cl.ty, o.tx, o.ty) < R) {
+              setT(cl, o.tx, o.ty); merge(cl, o); again = true; snapped = true;
+              record('snap', { piece: dragged.i, to: 'neighbour', pieces: cl.pieces.length });
+              break;
+            }
+          }
+        }
+        // a cluster that grew may now be within reach of the board
+        if (snapped && dist(cl.tx, cl.ty, M, M) < R) { lock(cl); clusters.filter(function (o) { return o !== cl && o.locked; }).forEach(function (o) { merge(cl, o); }); }
+      }
+      if (!snapped) {
+        var nearBoard = dist(cl.tx, cl.ty, M, M) < 2 * R;
+        record('drop', { piece: dragged.i, nearMiss: nearBoard });
+      }
+      if (hintPiece && hintPiece.cluster.locked) hideHint();
+      updateStatus();
+      if (lockedCount() === pieces.length) finish();
+    }
+
+    // ---------- dragging ----------
+    var drag = null, hintPiece = null, lastTouched = null;
+    function svgPoint(ev) {
+      var pt = play.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      return pt.matrixTransform(play.getScreenCTM().inverse());
+    }
+    play.addEventListener('pointerdown', function (ev) {
+      var node = ev.target.closest ? ev.target.closest('.piece') : null;
+      if (!node) return;
+      var p = pieces[+node.getAttribute('data-i')];
+      if (p.cluster.locked) return;
+      ev.preventDefault();
+      var cl = p.cluster;
+      layer.appendChild(cl.g);            // bring to front
+      cl.g.classList.add('cluster--dragging');
+      var pt = svgPoint(ev);
+      drag = { cl: cl, piece: p, sx: pt.x, sy: pt.y, tx: cl.tx, ty: cl.ty, path: [[pt.x, pt.y]], id: ev.pointerId };
+      lastTouched = p;
+      try { play.setPointerCapture(ev.pointerId); } catch (e) {}
+      if (!game.firstMoveAt) { game.firstMoveAt = now(); record('firstMove', { piece: p.i }); }
+      record('pick', { piece: p.i, cluster: cl.pieces.length });
+    });
+    play.addEventListener('pointermove', function (ev) {
+      if (!drag || ev.pointerId !== drag.id) return;
+      ev.preventDefault();
+      var pt = svgPoint(ev);
+      drag.path.push([pt.x, pt.y]);
+      setT(drag.cl, drag.tx + (pt.x - drag.sx), drag.ty + (pt.y - drag.sy));
+    });
+    function endDrag(ev) {
+      if (!drag || ev.pointerId !== drag.id) return;
+      var d = drag; drag = null;
+      d.cl.g.classList.remove('cluster--dragging');
+      clamp(d.cl);
+      // path metrics
+      var len = 0; for (var i = 1; i < d.path.length; i++) len += Math.hypot(d.path[i][0] - d.path[i - 1][0], d.path[i][1] - d.path[i - 1][1]);
+      var straight = Math.hypot(d.path[d.path.length - 1][0] - d.path[0][0], d.path[d.path.length - 1][1] - d.path[0][1]);
+      record('release', { piece: d.piece.i, pathLen: Math.round(len), straight: Math.round(straight), samples: d.path.length });
+      snap(d.cl, d.piece);
+    }
+    play.addEventListener('pointerup', endDrag);
+    play.addEventListener('pointercancel', endDrag);
+
+    // ---------- hint ----------
+    function showHint() {
+      var p = lastTouched && !lastTouched.cluster.locked ? lastTouched : null;
+      if (!p) { var loose = pieces.filter(function (q) { return !q.cluster.locked; }); p = loose[Math.floor(Math.random() * loose.length)]; }
+      if (!p) return;
+      hintPiece = p;
+      hintSlot.setAttribute('d', p.d);
+      hintSlot.setAttribute('transform', 'translate(' + M + ' ' + M + ')');
+      hintSlot.setAttribute('visibility', 'visible');
+      layer.appendChild(p.cluster.g);
+      p.cluster.g.classList.add('cluster--dragging');
+      setTimeout(function () { if (!drag) p.cluster.g.classList.remove('cluster--dragging'); }, 0);
+      p.node.querySelector('.piece__outline').setAttribute('stroke', '#1e40af');
+      p.node.querySelector('.piece__outline').setAttribute('stroke-width', '8');
+      $('instruction').textContent = 'The outlined piece goes in the outlined spot.';
+      record('hint', { piece: p.i });
+    }
+    function hideHint() {
+      if (!hintPiece) return;
+      hintSlot.setAttribute('visibility', 'hidden');
+      hintPiece.node.querySelector('.piece__outline').setAttribute('stroke', '#4b5563');
+      hintPiece.node.querySelector('.piece__outline').setAttribute('stroke-width', '4');
+      hintPiece = null;
+      $('instruction').textContent = 'Drag a piece onto the picture.';
+    }
+    function updateStatus() {
+      var left = pieces.length - lockedCount();
+      $('status').textContent = left === 0 ? 'All in place.' : left === 1 ? '1 piece left' : left + ' pieces left';
+    }
+    function finish() {
+      record('complete', {});
+      game.completedAt = now();
+      renderMetrics();
+      $('done-text').textContent = 'All ' + pieces.length + ' pieces are in place.';
+      show('done');
+    }
+
+    updateStatus();
+    return {
+      count: count, pieces: pieces, showHint: showHint, hideHint: hideHint,
+      startedAt: now(), firstMoveAt: null, completedAt: null,
+      snapshot: function () { return { count: count, clusters: clusters.map(function (c) { return { tx: c.tx, ty: c.ty, locked: c.locked, pieces: c.pieces.map(function (p) { return p.i; }) }; }) }; }
+    };
+  }
+
+  // ---------- metrics for the demo ----------
+  function renderMetrics() {
+    var picks = log.filter(function (e) { return e.kind === 'pick'; }).length;
+    var drops = log.filter(function (e) { return e.kind === 'drop'; });
+    var snaps = log.filter(function (e) { return e.kind === 'snap'; });
+    var releases = log.filter(function (e) { return e.kind === 'release' && e.pathLen > 0; });
+    var straightness = releases.length ? releases.reduce(function (a, e) { return a + e.straight / Math.max(e.pathLen, 1); }, 0) / releases.length : 0;
+    // perseveration: the same piece dropped without a snap more than once
+    var perPiece = {}; drops.forEach(function (e) { perPiece[e.piece] = (perPiece[e.piece] || 0) + 1; });
+    var persev = Object.keys(perPiece).filter(function (k) { return perPiece[k] >= 2; }).length;
+    // order coherence: share of snaps whose piece was adjacent to the previously snapped piece
+    var coherent = 0; for (var i = 1; i < snaps.length; i++) { var a = game.pieces[snaps[i - 1].piece], b = game.pieces[snaps[i].piece]; if (Math.abs(a.col - b.col) + Math.abs(a.row - b.row) === 1) coherent++; }
+    var coherence = snaps.length > 1 ? coherent / (snaps.length - 1) : 0;
+    // lapses: gaps over 8 s between any two events after the first move
+    var lapses = 0, longest = 0; for (var j = 1; j < log.length; j++) { var gap = log[j].t - log[j - 1].t; if (gap > 8000) lapses++; if (gap > longest) longest = gap; }
+    var secs = function (ms) { return (ms / 1000).toFixed(1) + ' s'; };
+    var rows = [
+      ['Time to first move', secs(game.firstMoveAt - game.startedAt)],
+      ['Total time', secs(game.completedAt - game.startedAt)],
+      ['Pieces picked up', picks + ' (for ' + game.pieces.length + ' pieces)'],
+      ['Drops that did not click in', drops.length + (drops.filter(function (e) { return e.nearMiss; }).length ? ' (' + drops.filter(function (e) { return e.nearMiss; }).length + ' near the board)' : '')],
+      ['Same piece dropped loose twice or more', String(persev)],
+      ['Order coherence', Math.round(coherence * 100) + '% of clicks next to the previous one'],
+      ['Drag straightness', Math.round(straightness * 100) + '% (100% is a straight line)'],
+      ['Pauses over 8 s', lapses + (longest > 8000 ? ' (longest ' + secs(longest) + ')' : '')]
+    ];
+    var t = $('metrics'); t.innerHTML = '';
+    rows.forEach(function (r) { var tr = document.createElement('tr'); var th = document.createElement('th'); th.textContent = r[0]; var td = document.createElement('td'); td.className = 'num'; td.textContent = r[1]; tr.appendChild(th); tr.appendChild(td); t.appendChild(tr); });
+  }
+
+  // ---------- screens ----------
+  var current = 'invite';
+  function show(name) {
+    current = name;
+    for (var k in screens) screens[k].hidden = k !== name;
+    footer.start.hidden = name !== 'invite';
+    footer.hint.hidden = name !== 'puzzle';
+    footer.carryOn.hidden = name !== 'done';
+    $('back').hidden = name === 'invite';
+  }
+  function startPuzzle(restore) {
+    log = []; record('start', { count: pieceCount });
+    game = buildGame(pieceCount, restore);
+    show('puzzle');
+  }
+  $('count-options').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[role=radio]'); if (!b) return;
+    pieceCount = +b.getAttribute('data-count');
+    Array.prototype.forEach.call(this.querySelectorAll('button[role=radio]'), function (o) {
+      var on = o === b; o.setAttribute('aria-checked', on ? 'true' : 'false'); o.querySelector('.choice__mark').textContent = on ? '✓' : '';
+    });
+  });
+  footer.start.addEventListener('click', function () { startPuzzle(); });
+  footer.hint.addEventListener('click', function () { if (game) game.showHint(); });
+  footer.carryOn.addEventListener('click', function () { show('invite'); });
+  $('back').addEventListener('click', function () { show('invite'); });
+  $('home').addEventListener('click', function () { show('invite'); });
+
+  // Keep a half-finished puzzle across a page update.
+  function boot(data) {
+    if (data && data.screen === 'puzzle' && data.game) { pieceCount = data.game.count; startPuzzle(data.game); }
+    else show('invite');
+  }
+  if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
+    window.claude.hot.snapshot(function () { return { screen: current, game: current === 'puzzle' && game ? game.snapshot() : null }; });
+  }
+  if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(boot);
+  else boot((window.claude && window.claude.hot && window.claude.hot.data) || {});
+})();
+</script>

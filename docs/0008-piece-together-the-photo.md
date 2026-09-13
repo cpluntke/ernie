@@ -8,7 +8,7 @@
 | **Last updated** | 2026-09-13 |
 | **Links** | concept research: [Senior Care Penalty Map](https://claude.ai/code/artifact/d43759e2-23b2-4ea1-beed-57452bcc28b2); baseline method shared with [0002](0002-sign-the-guest-book.md); capture via [0007](0007-data-capture-and-analysis.md) |
 
-> A small jigsaw, up to 20 tiles, solved by tapping a piece and then the place it goes. Any photo will do for the sketch; family photos come later. The search for each piece is an attention task, the assembly is a visuospatial task, and the order and the wrong tries show how organised the person's thinking is today.
+> A small jigsaw, up to 20 interlocking pieces, moved by finger. Pieces click into the board, and onto each other, when they are close. Any photo will do for the sketch; family photos come later. The search for each piece is an attention task, the assembly is a visuospatial task, and the order and the wrong tries show how organised the person's thinking is today.
 
 > **Sketch phase:** fill sections 1–5 and 8–9; leave 6 as a rough note and 7 as
 > N/A. **Prototype phase:** fill everything, and record in the Decision log
@@ -37,12 +37,14 @@ a visuospatial or a strategy signal, and no home tool measures either.
 ## 3. Goals and non-goals
 
 **Goals**
-- A photo cut into square tiles, from 4 up to 20 (2×2, 2×3, 3×3, 3×4, 4×4,
-  4×5), each at least 56 px, laid out shuffled below an outlined board.
-- Tap a piece, then tap the place it goes. No dragging required; drag is an
-  optional extra for those who like it, and its path is logged if used.
-- A wrong placement is never punished: "Not there. Try another spot", and
-  the piece goes back.
+- A photo cut into interlocking jigsaw pieces, 12 on a phone or 20 on a
+  tablet (4×3 or 5×4), laid out shuffled below an outlined board with a
+  faint ghost of the picture.
+- Move a piece with a finger. A generous magnet (45% of a piece) clicks it
+  into its slot on the board, or onto a correct neighbour, so precision is
+  never required; joined pieces move as one. Snapping is instant, no animation.
+- A wrong placement is never punished: a piece that does not click in simply
+  stays where it was put. Nothing is said.
 - Fixed difficulty across days so the person's own baseline holds; the
   caregiver changes it deliberately, not the app.
 - Log per piece: time to place, wrong tries, tap precision, and the order
@@ -59,7 +61,7 @@ a visuospatial or a strategy signal, and no home tool measures either.
 ## 4. Success criteria
 
 - A tester completes a 12-piece puzzle unaided in under four minutes on a
-  phone and a 20-piece one on a tablet.
+  phone and a 20-piece one on a tablet, using the touch prototype.
 - Five sessions at fixed difficulty give a per-session series for search
   time, wrong tries, and placement order.
 - Wrong tries never produce a dead end; the hint path always finishes the puzzle.
@@ -78,11 +80,12 @@ it goes forward.
 ### 5.1 User flow
 
 1. Ernie: "Shall we put a picture back together?" Primary: "Yes, let's do it".
-2. Puzzle page: an outlined board with empty slots above, the shuffled
-   pieces below. Instruction line: "Tap a piece." After a tap the piece is
-   outlined and the line says "Now tap where it goes." Correct: the piece
-   snaps in and stays. Wrong: "Not there. Try another spot." and it returns.
-   Secondary: "Show me where this goes" outlines the slot for the selected piece.
+2. Puzzle page: the outlined board with a faint ghost of the picture above,
+   the shuffled pieces below. Instruction: "Drag a piece onto the picture."
+   Close enough and it clicks in and stays; joined neighbours travel
+   together. Not close enough and it stays where it was left, nothing said.
+   Secondary: "Show me where this goes" outlines the last touched piece and
+   its slot until it is placed.
 3. Complete: the whole photo appears without lines. "You did it!"
    Primary: "Carry on". "Go back" at any time ends the session;
    the pieces placed so far are kept for tomorrow.
@@ -92,14 +95,14 @@ it goes forward.
 | Screen | Purpose | Primary action | States (empty / loading / error / success) |
 |--------|---------|----------------|--------------------------------------------|
 | Invite | offer the puzzle | Yes, let's do it | already done today; puzzle half done from yesterday ("Carry on with yesterday's?") |
-| Puzzle | assemble | tap piece, tap slot | nothing selected; piece selected; wrong spot (message, piece returns); piece placed; hint shown; complete |
+| Puzzle | assemble | drag a piece | untouched; piece lifted (blue outline, shadow); dropped loose; clicked into board; clicked onto a neighbour; hint shown; complete |
 | Thank you | close | Carry on | completed; stopped early ("We'll keep your pieces for tomorrow") |
 
-Mockups: [design canvas](https://claude.ai/code/artifact/af136106-64b8-4f09-9c01-c72566a96102) with four screens (invite, puzzle at 12 pieces on a phone, done, puzzle at 20 pieces on a tablet with a hint shown). Sources in `docs/assets/0008/`; regenerate with `python3 docs/assets/0008/gen.py`.
+Mockups: [touch prototype](https://claude.ai/code/artifact/6cd7aafe-d024-47d2-b98c-9bbb43c65609) (open on a phone; source `docs/assets/0008/jigsaw-prototype.html`, a single page with no build step) and the earlier static [design canvas](https://claude.ai/code/artifact/af136106-64b8-4f09-9c01-c72566a96102) with square tiles, kept for the screen layout.
 
 ### 5.3 Copy and tone
 
-- "Tap a piece." / "Now tap where it goes." / "Not there. Try another spot."
+- "Drag a piece onto the picture." / "The outlined piece goes in the outlined spot." / "3 pieces left"
 - "Show me where this goes", not "Hint".
 - "You did it!" and the photo, no time shown.
 
@@ -114,14 +117,17 @@ Checklist from `docs/research/design-criteria-80-plus.md` section 3:
   (4×3 or 4×4), so the board fits 400 px; the page scrolls vertically
   between board and tray, never sideways.
 - [x] Every target ≥ 48 px with visible gaps
-- [x] Tap-only; drag is optional and never the only path
+- [ ] Tap-only; drag is optional and never the only path. **Known
+  deviation:** the owner chose finger-drag with a magnet as the mechanic.
+  The magnet radius (45% of a piece) is the mitigation for imprecise drops;
+  a tap-to-place alternative is an open question.
 - [x] Body text ≥ 18 px; at 200% zoom the board scales to the width, tray wraps below
 - [x] Text contrast ≥ 7:1; a selected piece is outlined and the instruction names it
 - [x] Every icon has a text label
 - [x] No web jargon; labels say what happens
 - [x] Undo or back from every screen; tapping a selected piece again deselects it
 - [x] Errors are plain, local, and say how to fix
-- [x] Nothing moves, times out, or disappears on its own; snapping is instant, not animated
+- [x] Nothing moves, times out, or disappears on its own; snapping is instant, not animated; the page never scrolls while a finger is on the board
 - [x] Anything audible has a visual equivalent (no sound)
 - [x] A helper/caregiver supplies photos and sets the piece count
 
@@ -146,11 +152,11 @@ person's baseline with the robust z method from 0002:
 | Search time per piece | attention, visual search | slot tap minus previous placement; mean and variability |
 | Wrong tries per piece | visuospatial judgement | count of wrong slot taps before the right one |
 | Perseveration | disorganised thinking | same piece tried in the same wrong slot twice or more |
-| Placement precision | motor control | distance from tap point to slot centre, in slot widths |
+| Placement precision | motor control | distance from release point to the snapped position, in piece widths |
 | Order coherence | strategy, organised thinking | share of placements adjacent to the previous piece; corners and edges first |
 | Lapses | attention | pauses over 8 s with no tap, count and total |
 | Hints and abandonment | difficulty, engagement | hints used; stopped early |
-| Drag path (if dragged) | tremor, control | straightness (path length over straight line), speed, jitter |
+| Drag path | tremor, control | straightness (straight line over path length), speed, jitter |
 
 Search time and lapses map to the core attention feature; perseveration
 and order coherence to disorganised thinking; wrong tries and precision to
@@ -173,8 +179,9 @@ N/A. Events `jigsaw.shown`, `jigsaw.tap`, `jigsaw.placed`, `jigsaw.hint`, `jigsa
 
 | Decision | Chosen | Alternatives considered | Why |
 |----------|--------|-------------------------|-----|
-| Moving a piece | tap piece, tap slot; drag optional | drag only; sliding puzzle | drag is the highest-error gesture for this group; sliding puzzles need planning most people find frustrating |
-| Piece shape | square tiles | interlocking shapes | shapes add nothing to the signal and a lot to the build; tiles keep targets large and rectangular |
+| Moving a piece | finger drag with a wide magnet; joined pieces move together | tap piece then tap slot; sliding puzzle | owner's call: the feel of a real jigsaw matters for the pull; the magnet absorbs imprecision, and the drag path is itself a motor signal |
+| Piece shape | interlocking tabs, one bump per shared edge | square tiles | reads as a jigsaw at a glance; the hit area is the whole piece so tabs never have to be aimed at |
+| Snapping to neighbours | yes, clusters merge | board only | lets the person build islands in the tray the way people really do; clusters within reach of the board lock as one |
 | Picture | any bundled photo for the sketch; family photos later | family photo from day one | the sketch tests the mechanics and the signal, not the social payload; family photos need 0007's setup |
 | Piece count | 4 to 20, caregiver-set | up to 9; unlimited | 20 gives enough placements per session for order and variability measures while staying under ten minutes |
 | Difficulty | fixed by the caregiver | adaptive | the signal is deviation at fixed difficulty; adaptivity would erase it |
@@ -197,6 +204,8 @@ N/A.
 |----------|-------|-----------|
 | Same photo for a week (memory helps, order coherence gets confounded) or a new photo every day (no memory effect, more photos needed)? | @cpluntke | mid-way review |
 | Default piece count for the sketch: 12 on phones, 20 on tablets? | @cpluntke | before build |
+| Offer tap-to-place as well, for people who cannot drag, or is the magnet enough? | @cpluntke | mid-way review |
+| On a phone the whole puzzle fits one screen with pieces about 63 px wide and a 28 px magnet; is that big enough, or should phones scroll? | @cpluntke | mid-way review |
 | Keep half-finished puzzles overnight, or reset each day so every session is comparable? | @cpluntke | mid-way review |
 
 ## 9. Decision log
@@ -205,6 +214,7 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Mechanic changed to finger drag with a magnet; interlocking piece shapes; neighbour snapping; touch prototype built and linked; tap-only becomes a known deviation | Owner request after seeing the static mockups |
 | 2026-09-13 | Mockups drawn on the ernie-ui tokens; 20 tiles stay distinguishable on a tablet, plain-sky tiles are the weak spot | Owner asked to see it |
 | 2026-09-13 | Any photo for the sketch; cap raised to 20 tiles; family photo and recognition question deferred | Owner review |
 | 2026-09-13 | Created | Owner asked for a jigsaw idea; adds visuospatial and strategy signals no other sketch has |
