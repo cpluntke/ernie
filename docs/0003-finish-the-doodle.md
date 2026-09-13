@@ -178,4 +178,5 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Family side is a mock route with seeded starts; no real link or sending | Per 0007: family link mocked for now |
 | 2026-09-13 | Created | Brainstorm pick: the social pull that makes a missed day meaningful |

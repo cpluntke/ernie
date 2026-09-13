@@ -180,4 +180,5 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Helper setup screen deferred; names and photos seeded | Per 0007: assume images and names come in somehow |
 | 2026-09-13 | Created | Brainstorm pick: an attention task that is a real puzzle and personal |
