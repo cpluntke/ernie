@@ -99,8 +99,11 @@ Person:
 4. Done: "Sent. Anna will see it on her phone." Primary: "Carry on".
 
 Family (stub, one screen each):
-1. "Start a doodle for Margaret": pick one of three pre-made starts ("half a
-   house", "a cat with no face", "a flower with no petals"). Primary: "Send to Margaret".
+1. "Start a doodle for Margaret": pick one of Anna's three started doodles,
+   which ship with the prototype as stroke data (`docs/assets/0003/starts/`):
+   "Half a house", "A cat with no face", "A flower with no petals". Each
+   carries Anna's one-line invite, shown on the person's Invite screen
+   ("I drew the roof. Can you finish the house, Grandma?"). Primary: "Send to Margaret".
 2. Later: "Margaret finished your doodle" with the picture and one line:
    "Opened after 2 hours, drew for 1 minute."
 
@@ -115,7 +118,11 @@ Family (stub, one screen each):
 | Family: start | make a start | Send to Margaret | none picked (Send disabled); one picked |
 | Family: finished | show the result and the engagement line | none (Go back) | nothing finished yet ("Margaret hasn't opened it yet"); finished |
 
-Mockups: `docs/assets/0003/` (none yet).
+Mockups: the three starts rendered in `docs/assets/0003/starts/*.svg`:
+
+| Half a house | A cat with no face | A flower with no petals |
+|---|---|---|
+| ![Half a house](assets/0003/starts/half-a-house.svg) | ![A cat with no face](assets/0003/starts/cat-with-no-face.svg) | ![A flower with no petals](assets/0003/starts/flower-with-no-petals.svg) |
 
 ### 5.3 Copy and tone
 
@@ -176,6 +183,10 @@ Sketch, one record per doodle:
   sentAt, openedAt, firstStrokeAt, finishedAt }
 ```
 
+`startId` names one of the three shipped starts; their `strokes` (author
+`family`) are copied into the record when the doodle is sent, and the
+person's strokes (author `person`) are appended as they draw.
+
 Engagement line on the family side is derived: time-to-open = openedAt −
 sentAt; drawing time = finishedAt − firstStrokeAt. The same four timestamps
 are what the comparison with 0002 uses.
@@ -221,5 +232,6 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Added Anna's three started doodles as stroke data and SVG in `docs/assets/0003/starts/`, with her invite line per start | Owner: the prototype should ship three starts created in the grandchild's name, so the person's loop can be demoed without a family app |
 | 2026-09-13 | Reframed around the load-bearing hypothesis (creative + social pull beats a plain check-in); stroke kinematics moved to non-goals; family side cut to a stub with three canned starts; queueing, offline and gallery removed; line colours specified; recorder format aligned with 0002; three decisions added to 6.4 | Review: the sketch was restating 0002's signal with weaker evidence, and the family side was undecided but load-bearing for the build |
 | 2026-09-13 | Created | Brainstorm pick: the social pull that makes a missed day meaningful |
