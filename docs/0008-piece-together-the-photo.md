@@ -8,7 +8,7 @@
 | **Last updated** | 2026-09-13 |
 | **Links** | concept research: [Senior Care Penalty Map](https://claude.ai/code/artifact/d43759e2-23b2-4ea1-beed-57452bcc28b2); baseline method shared with [0002](0002-sign-the-guest-book.md); capture via [0007](0007-data-capture-and-analysis.md) |
 
-> A small jigsaw, up to 20 interlocking pieces, moved by finger. Pieces click into the board, and onto each other, when they are close. Any photo will do for the sketch; family photos come later. The search for each piece is an attention task, the assembly is a visuospatial task, and the order and the wrong tries show how organised the person's thinking is today.
+> A small jigsaw, up to 20 interlocking pieces, moved by finger. Pieces click into the board, and onto each other, when they are close. Played alone, together on one screen with someone in the same home, or together from afar with a grandchild on a shared live board. Any photo will do for the sketch; family photos come later. The search for each piece is an attention task, the assembly is a visuospatial task, and the order and the wrong tries show how organised the person's thinking is today.
 
 > **Sketch phase:** fill sections 1–5 and 8–9; leave 6 as a rough note and 7 as
 > N/A. **Prototype phase:** fill everything, and record in the Decision log
@@ -28,9 +28,13 @@ a visuospatial or a strategy signal, and no home tool measures either.
 
 - **Who:** the person (80+). A caregiver sets the number of pieces. For the
   sketch the photo is any pleasant picture; later a family member supplies them.
+  In the together modes: a friend or partner in the same home (one screen,
+  two fingers), or a grandchild on their own phone (two screens, one board).
 - **Job:** "When I have ten quiet minutes, I want to put a picture of my
   family back together, so I have something calm to do that ends with a
   face I love."
+- **Job (together):** "When Anna has a few minutes, I want us to do a puzzle
+  side by side even though she is far away, so it feels like she came round."
 - **Context:** tablet or phone, once a day inside Ernie's visit or on its
   own. Tablets are far better here; phones cap the piece count.
 
@@ -43,12 +47,21 @@ a visuospatial or a strategy signal, and no home tool measures either.
 - Move a piece with a finger. A generous magnet (45% of a piece) clicks it
   into its slot on the board, or onto a correct neighbour, so precision is
   never required; joined pieces move as one. Snapping is instant, no animation.
+- **Together on this screen:** two fingers can each hold a piece at once.
+  Nothing else changes; no turns, no roles.
+- **Together from afar:** both phones show the same board and pieces, cut
+  from a shared seed. Every drop is sent as the whole board so the two
+  screens never drift. The partner's held piece is outlined and carries a
+  name tag ("Anna"), never colour alone. Whoever arrives second joins the
+  puzzle in progress. If the live connection is not available, the page
+  says so in a Note and the person plays alone.
 - A wrong placement is never punished: a piece that does not click in simply
   stays where it was put. Nothing is said.
 - Fixed difficulty across days so the person's own baseline holds; the
   caregiver changes it deliberately, not the app.
 - Log per piece: time to place, wrong tries, tap precision, and the order
-  of placement; per session: time to first move, pauses, completion.
+  of placement; per session: time to first move, pauses, completion, and
+  the mode, because the together modes change what the numbers mean (6.1).
 
 **Non-goals** (explicitly out of scope for this iteration)
 - Interlocking piece shapes, rotation, or sliding puzzles.
@@ -57,6 +70,9 @@ a visuospatial or a strategy signal, and no home tool measures either.
   the sketch any photo will do (a bundled landscape or a pet); the family
   photo and recognition item are a later slice once 0007's setup exists.
 - A visible timer, score, or "best time".
+- Turn-taking, chat, voice, or a cursor for the partner; only the held piece
+  is shown. Real identity for the partner: for the sketch each phone picks
+  "I am Margaret" or "I am Anna" from two buttons.
 
 ## 4. Success criteria
 
@@ -65,6 +81,8 @@ a visuospatial or a strategy signal, and no home tool measures either.
 - Five sessions at fixed difficulty give a per-session series for search
   time, wrong tries, and placement order.
 - Wrong tries never produce a dead end; the hint path always finishes the puzzle.
+- Two phones on the same account, opened side by side, finish one puzzle
+  together with both seeing every piece land.
 
 ### 4.1 Sketch verdict
 
@@ -79,7 +97,10 @@ it goes forward.
 
 ### 5.1 User flow
 
-1. Ernie: "Shall we put a picture back together?" Primary: "Yes, let's do it".
+1. Ernie: "Shall we put a picture back together?" then "Who is playing?":
+   Just me / Together on this screen / Together from afar. From afar adds
+   "Who are you?" (Margaret / Anna). Then "How many pieces?" and "Yes,
+   let's do it". Joining a partner's puzzle skips the pieces question.
 2. Puzzle page: the outlined board with a faint ghost of the picture above,
    the shuffled pieces below. Instruction: "Drag a piece onto the picture."
    Close enough and it clicks in and stays; joined neighbours travel
@@ -94,8 +115,10 @@ it goes forward.
 
 | Screen | Purpose | Primary action | States (empty / loading / error / success) |
 |--------|---------|----------------|--------------------------------------------|
-| Invite | offer the puzzle | Yes, let's do it | already done today; puzzle half done from yesterday ("Carry on with yesterday's?") |
-| Puzzle | assemble | drag a piece | untouched; piece lifted (blue outline, shadow); dropped loose; clicked into board; clicked onto a neighbour; hint shown; complete |
+| Invite | who is playing | Carry on | already done today; puzzle half done from yesterday ("Carry on with yesterday's?") |
+| Who are you (afar) | name this phone | Carry on | live room available; not available (Note, falls back to playing alone) |
+| How many pieces | choose the size | Yes, let's do it | solo; afar ("Looking for Anna", jumps to her puzzle if one is running) |
+| Puzzle | assemble | drag a piece | untouched; piece lifted (blue outline, shadow); dropped loose; clicked into board; clicked onto a neighbour; hint shown; complete; shared: two pieces lifted; afar: "Anna is here" / "Waiting for Anna", Anna's held piece with a name tag |
 | Thank you | close | Carry on | completed; stopped early ("We'll keep your pieces for tomorrow") |
 
 Mockups: [touch prototype](https://claude.ai/code/artifact/6cd7aafe-d024-47d2-b98c-9bbb43c65609) (open on a phone; source `docs/assets/0008/jigsaw-prototype.html`, a single page with no build step) and the earlier static [design canvas](https://claude.ai/code/artifact/af136106-64b8-4f09-9c01-c72566a96102) with square tiles, kept for the screen layout.
@@ -103,6 +126,7 @@ Mockups: [touch prototype](https://claude.ai/code/artifact/6cd7aafe-d024-47d2-b9
 ### 5.3 Copy and tone
 
 - "Drag a piece onto the picture." / "The outlined piece goes in the outlined spot." / "3 pieces left"
+- Shared: "Two can play at once. Each take a piece." Afar: "3 pieces left · Anna is here", "You did it together!"
 - "Show me where this goes", not "Hint".
 - "You did it!" and the photo, no time shown.
 
@@ -129,7 +153,7 @@ Checklist from `docs/research/design-criteria-80-plus.md` section 3:
 - [x] Errors are plain, local, and say how to fix
 - [x] Nothing moves, times out, or disappears on its own; snapping is instant, not animated; the page never scrolls while a finger is on the board
 - [x] Anything audible has a visual equivalent (no sound)
-- [x] A helper/caregiver supplies photos and sets the piece count
+- [x] A helper/caregiver supplies photos and sets the piece count; a grandchild can join from afar without setting anything up on the person's phone
 
 Edge cases: photos with large plain areas (sky) make pieces
 indistinguishable, so the bundled sketch photo is busy and evenly detailed; portrait vs landscape boards; a piece tapped onto an occupied
@@ -188,6 +212,15 @@ person's baseline with the robust z method from 0002:
 personal baseline from 0002, plus the rolling seven-day standard deviation,
 at a fixed piece count. Session opened or not, and when, comes from 0007.
 
+**What the together modes do to the signal.** Together on one screen, two
+people's fingers cannot be told apart, so the session counts as engagement
+(like 0003) and never enters the baseline. Together from afar, each phone
+logs only its own drags, so the motor statistics (speed, straightness,
+submovements, tremor, release distance) still hold for the person; search
+time, order coherence and total time are shared work and are excluded from
+the baseline. Sessions carry `mode` and `partner`, and the family view says
+"played with Anna" rather than comparing that day's attention numbers.
+
 Mapping to the four delirium features: attention is search time, lapses and
 variability; disorganised thinking is perseveration, order coherence and
 wandering; psychomotor change is speed, submovements, straightness and
@@ -213,6 +246,9 @@ N/A. Events in 0007's stream: `jigsaw.shown`, `jigsaw.pick` (piece, grab point),
 | Moving a piece | finger drag with a wide magnet; joined pieces move together | tap piece then tap slot; sliding puzzle | owner's call: the feel of a real jigsaw matters for the pull; the magnet absorbs imprecision, and the drag path is itself a motor signal |
 | Piece shape | interlocking tabs, one bump per shared edge | square tiles | reads as a jigsaw at a glance; the hit area is the whole piece so tabs never have to be aimed at |
 | Snapping to neighbours | yes, clusters merge | board only | lets the person build islands in the tray the way people really do; clusters within reach of the board lock as one |
+| Playing from afar | shared seed for identical pieces; whole board sent on every drop; live hold via presence | send moves as deltas; a server-side board | whole-board sync cannot drift and needs no server; a drop is rare enough to send everything |
+| Together on one screen | several fingers at once, no turns | pass-the-tablet turns | turns add rules to remember; two fingers is how people share a real jigsaw |
+| Partner identity | chosen from two name buttons | typed name; account | no typing for this audience; real identity waits for 0007's links |
 | Picture | any bundled photo for the sketch; family photos later | family photo from day one | the sketch tests the mechanics and the signal, not the social payload; family photos need 0007's setup |
 | Piece count | 4 to 20, caregiver-set | up to 9; unlimited | 20 gives enough placements per session for order and variability measures while staying under ten minutes |
 | Difficulty | fixed by the caregiver | adaptive | the signal is deviation at fixed difficulty; adaptivity would erase it |
@@ -236,6 +272,8 @@ N/A.
 | Same photo for a week (memory helps, order coherence gets confounded) or a new photo every day (no memory effect, more photos needed)? | @cpluntke | mid-way review |
 | Default piece count for the sketch: 12 on phones, 20 on tablets? | @cpluntke | before build |
 | Offer tap-to-place as well, for people who cannot drag, or is the magnet enough? | @cpluntke | mid-way review |
+| From afar: should the grandchild be able to start the puzzle for the person, so it is waiting when they open the app? | @cpluntke | mid-way review |
+| From afar: does the person want to see Anna's piece moving live, or is that motion a distraction? | @cpluntke | mid-way review |
 | On a phone the whole puzzle fits one screen with pieces about 63 px wide and a 28 px magnet; is that big enough, or should phones scroll? | @cpluntke | mid-way review |
 | Keep half-finished puzzles overnight, or reset each day so every session is comparable? | @cpluntke | mid-way review |
 
@@ -245,6 +283,7 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Together modes added: two fingers on one screen, and a shared live board from afar; prototype updated; signal rules for together sessions written into 6.1 | Owner asked for a way to play with a grandchild or a friend in the same home |
 | 2026-09-13 | Statistics written out per drag, per piece, per session, across days; event list updated | Owner asked what the drag mechanic lets us collect |
 | 2026-09-13 | Mechanic changed to finger drag with a magnet; interlocking piece shapes; neighbour snapping; touch prototype built and linked; tap-only becomes a known deviation | Owner request after seeing the static mockups |
 | 2026-09-13 | Mockups drawn on the ernie-ui tokens; 20 tiles stay distinguishable on a tablet, plain-sky tiles are the weak spot | Owner asked to see it |
