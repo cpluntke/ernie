@@ -65,9 +65,18 @@ const customChecks = () => {
     issues.push({ id, severity, message, fix, node: el ? sel(el) : null, ...extra });
   };
 
+  // Only elements actually on top at their centre count as tap targets; content
+  // scrolled beneath a sticky footer or behind a dialog overlay is not tappable.
+  const onTop = (el) => {
+    const r = el.getBoundingClientRect();
+    const cx = Math.min(Math.max(r.left + r.width / 2, 0), innerWidth - 1);
+    const cy = Math.min(Math.max(r.top + r.height / 2, 0), innerHeight - 1);
+    const hit = document.elementFromPoint(cx, cy);
+    return !hit || el === hit || el.contains(hit) || hit.contains(el);
+  };
   const interactive = [...document.querySelectorAll(
     'a[href], button, input:not([type=hidden]), select, textarea, [role=button], [role=link], [role=checkbox], [role=radio], [role=tab], [role=menuitem], [onclick], [tabindex]:not([tabindex="-1"])'
-  )].filter(vis);
+  )].filter(vis).filter(onTop);
 
   // 1. Target size (>= 48px) and spacing (>= 8px gap)
   for (const el of interactive) {

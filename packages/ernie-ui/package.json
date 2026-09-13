@@ -1,0 +1,33 @@
+{
+  "name": "ernie-ui",
+  "version": "0.1.0",
+  "description": "React component kit for the ernie prototype. Every component bakes in the design criteria for users aged 80 and older: 56px targets, 20px text, 7:1 contrast, visible labels, a way back from every screen, plain-language copy.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": ["dist"],
+  "sideEffects": ["*.css"],
+  "scripts": {
+    "build": "tsup && cp src/styles.css dist/styles.css",
+    "demo": "esbuild demo/demo.tsx --bundle --format=iife --outfile=demo/demo.js --jsx=automatic && cp src/styles.css demo/styles.css",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "esbuild": "^0.25.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  }
+}

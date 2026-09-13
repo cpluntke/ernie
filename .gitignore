@@ -1,2 +1,5 @@
 node_modules/
 ux-audit-out/
+dist/
+packages/ernie-ui/demo/demo.js
+packages/ernie-ui/demo/styles.css

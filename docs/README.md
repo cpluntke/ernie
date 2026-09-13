@@ -60,4 +60,4 @@ python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
 
 | # | Doc | Phase | Status |
 |---|-----|-------|--------|
-| — | _none yet_ | | |
+| 0001 | [ernie-ui design system](0001-ernie-ui-design-system.md) | Prototype | Building |
