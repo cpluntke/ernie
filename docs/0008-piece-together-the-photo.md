@@ -146,21 +146,52 @@ optional pointer drag that logs its path in 0002's stroke format. Every tap
 is an event in 0007's stream. Features per session, compared against the
 person's baseline with the robust z method from 0002:
 
-| Feature | What it captures | Compute |
-|---|---|---|
-| Time to first move | initiation, arousal | first piece tap minus board shown |
-| Search time per piece | attention, visual search | slot tap minus previous placement; mean and variability |
-| Wrong tries per piece | visuospatial judgement | count of wrong slot taps before the right one |
-| Perseveration | disorganised thinking | same piece tried in the same wrong slot twice or more |
-| Placement precision | motor control | distance from release point to the snapped position, in piece widths |
-| Order coherence | strategy, organised thinking | share of placements adjacent to the previous piece; corners and edges first |
-| Lapses | attention | pauses over 8 s with no tap, count and total |
-| Hints and abandonment | difficulty, engagement | hints used; stopped early |
-| Drag path | tremor, control | straightness (straight line over path length), speed, jitter |
+**Per drag** (motor control; the drag mechanic's own material)
 
-Search time and lapses map to the core attention feature; perseveration
-and order coherence to disorganised thinking; wrong tries and precision to
-the visuospatial severity item. Difficulty must stay fixed for the baseline
+| Statistic | What it captures | Compute |
+|---|---|---|
+| Duration, path length, straight-line distance, straightness | movement efficiency | from the raw pointer path; straightness = straight line over path length |
+| Mean and peak speed, speed variability | psychomotor slowing | resample to uniform time before differentiating |
+| Submovements | corrective movements | count of speed peaks along the path |
+| Tremor | tremor | lateral deviation from the smoothed path, or 4–12 Hz power; needs coalesced pointer events |
+| Hovers | hesitation at the target | pauses over 300 ms with the finger down |
+| Overshoot | aiming | path passes the target region and returns |
+| Release distance | precision, before the magnet hides it | release point to snapped position, recorded at the moment of release |
+| Grab point | mis-targeting | finger position relative to the piece centre |
+| Touch without move | accidental touches, indecision | pointerdown with no meaningful move |
+
+**Per piece** (visuospatial judgement, perseveration)
+
+| Statistic | What it captures | Compute |
+|---|---|---|
+| Pick-ups before placed | recognition of where it goes | count |
+| Loose drops and near-misses | spatial judgement | drops that did not click in; near-miss = within twice the magnet |
+| Perseveration | disorganised thinking | same piece dropped loose in the same region twice or more |
+| Placed via board or neighbour; cluster size | strategy | at the moment of the snap |
+| Time from first pick-up to placement | per-item difficulty | timestamps |
+| Hint used; hint to placement | responsiveness to cueing | timestamps |
+
+**Per session** (attention and organisation)
+
+| Statistic | What it captures | Compute |
+|---|---|---|
+| Time to first move | initiation, arousal | first pointerdown minus board shown |
+| Total time; time per piece | overall slowing | normalised by piece count |
+| Search time between moves; its variability | attention; variability is the phone-only signal | release to next pointerdown; mean and coefficient of variation |
+| Lapses | attention | gaps over 8 s with no touch; count and longest |
+| First half vs second half time per piece | fatigue, attention decline | split by placement order |
+| Order coherence | organised vs random approach | share of placements adjacent to the previous one; edges and corners first; islands built in the tray |
+| Wandering | organisation | total drag distance over the minimum needed |
+| Hints, loose drops, completion or abandonment point | difficulty, engagement | counts |
+
+**Across days**: every per-session statistic as a robust z against the
+personal baseline from 0002, plus the rolling seven-day standard deviation,
+at a fixed piece count. Session opened or not, and when, comes from 0007.
+
+Mapping to the four delirium features: attention is search time, lapses and
+variability; disorganised thinking is perseveration, order coherence and
+wandering; psychomotor change is speed, submovements, straightness and
+tremor; arousal is time to first move and whether the session was opened. Difficulty must stay fixed for the baseline
 to hold; a change of piece count starts a new baseline. With 12 to 20
 pieces there are enough placements per session for order coherence and
 search-time variability to be meaningful. **Riskiest unknown:** whether
@@ -173,7 +204,7 @@ N/A at sketch depth. Sketch: `{ day, photoId, pieces, taps: [{t, piece, slot, re
 
 ### 6.3 API / interfaces
 
-N/A. Events `jigsaw.shown`, `jigsaw.tap`, `jigsaw.placed`, `jigsaw.hint`, `jigsaw.completed` in 0007's stream.
+N/A. Events in 0007's stream: `jigsaw.shown`, `jigsaw.pick` (piece, grab point), `jigsaw.path` (raw points with timestamps, coalesced), `jigsaw.release` (release point, snapped or not, near-miss), `jigsaw.snap` (board or neighbour, cluster size), `jigsaw.hint`, `jigsaw.completed`, `jigsaw.abandoned`. Raw points are kept so every per-drag statistic can be recomputed.
 
 ### 6.4 Key decisions and alternatives
 
@@ -214,6 +245,7 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Statistics written out per drag, per piece, per session, across days; event list updated | Owner asked what the drag mechanic lets us collect |
 | 2026-09-13 | Mechanic changed to finger drag with a magnet; interlocking piece shapes; neighbour snapping; touch prototype built and linked; tap-only becomes a known deviation | Owner request after seeing the static mockups |
 | 2026-09-13 | Mockups drawn on the ernie-ui tokens; 20 tiles stay distinguishable on a tablet, plain-sky tiles are the weak spot | Owner asked to see it |
 | 2026-09-13 | Any photo for the sketch; cap raised to 20 tiles; family photo and recognition question deferred | Owner review |
