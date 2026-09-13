@@ -66,6 +66,9 @@ to get wrong:
   scope small enough to ship for the application deadline.
 - **Success criteria** should be observable: "a first-time user reaches X in
   under two minutes", not "the onboarding is good".
+- **Accessibility (5.4)**: the users are 80+. Run the checklist in
+  `docs/research/design-criteria-80-plus.md` against every screen and list
+  any item the sketch fails; a failing sketch usually isn't worth building.
 - **Screens and states**: every screen needs its empty, loading, error, and
   success states thought through. These are the states that get forgotten
   and look unfinished in a demo.

@@ -8,6 +8,8 @@ the two together instead of keeping them in sync.
 
 - The submission is a **web** prototype.
 - Product concept: _TBD, owner is working on it._
+- Target users are adults **80 and older**. Every sketch must pass the
+  checklist in [research/design-criteria-80-plus.md](research/design-criteria-80-plus.md).
 
 ## Two phases
 

@@ -6,6 +6,8 @@ Prototype web app built for a job application submission.
 
 - **Deliverable:** a runnable **web** prototype. Concept is still being
   decided; do not invent product goals until the owner provides them.
+- **Users are adults 80+.** Design criteria and a per-sketch checklist are in
+  `docs/research/design-criteria-80-plus.md`; apply them to every screen.
 - **Two phases.** Sketch phase first (many cheap explorations), a mid-way
   review picks the ones that worked, then a prototype phase builds those into
   the submission. See `docs/README.md`.
