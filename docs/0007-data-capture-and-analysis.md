@@ -80,7 +80,8 @@ N/A. Infrastructure for whichever game sketches are selected.
 ### 5.1 User flow
 
 1. On first start the server seeds one household from `seed.json`: the
-   person's first name, family names, relations, photos, words and clues.
+   person's first name, family names, relations, photos, words, clues, and
+   three started doodles in the grandchild's name (see 0003).
    It prints the person's link. (Setup screen and photo upload: later.)
 2. The person opens their link. The page starts a session, plays the games,
    and sends events as they happen. If the phone is offline, events queue
