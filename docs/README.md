@@ -4,6 +4,11 @@ Design docs for the ernie prototype. Each doc covers **both** product design and
 engineering design for one feature or slice, in one file, so we can iterate on
 the two together instead of keeping them in sync.
 
+## Constraints
+
+- The submission is a **web** prototype.
+- Product concept: _TBD, owner is working on it._
+
 ## Two phases
 
 1. **Sketch phase.** Many small, cheap explorations. Each sketch gets its own
