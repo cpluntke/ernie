@@ -7,7 +7,9 @@ the two together instead of keeping them in sync.
 ## Constraints
 
 - The submission is a **web** prototype.
-- Product concept: _TBD, owner is working on it._
+- Product concept: a daily companion (Ernie) whose games double as delirium
+  screening for people at home after a hospital stay. Background and the
+  clinical mapping are in the owner's [Senior Care Penalty Map](https://claude.ai/code/artifact/d43759e2-23b2-4ea1-beed-57452bcc28b2).
 - Target users are adults **80 and older**. Every sketch must pass the
   checklist in [research/design-criteria-80-plus.md](research/design-criteria-80-plus.md).
 
@@ -61,3 +63,8 @@ python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
 | # | Doc | Phase | Status |
 |---|-----|-------|--------|
 | 0001 | [ernie-ui design system](0001-ernie-ui-design-system.md) | Prototype | Building |
+| 0002 | [Sign the guest book](0002-sign-the-guest-book.md) | Sketch | Draft |
+| 0003 | [Finish the doodle](0003-finish-the-doodle.md) | Sketch | Draft |
+| 0004 | [Find the family](0004-find-the-family.md) | Sketch | Draft |
+| 0005 | [Clues from the family](0005-clues-from-the-family.md) | Sketch | Draft |
+| 0006 | [Coherence chat](0006-coherence-chat.md) | Sketch | Draft |
