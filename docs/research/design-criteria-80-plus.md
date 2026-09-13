@@ -208,3 +208,4 @@ From NN/G's guidance on usability testing with older adults:
 - Bentley University UXC, [Designing Mobile Experiences with Seniors in Mind](https://www.bentley.edu/centers/user-experience-center/designing-mobile-experiences-seniors-mind)
 - ACM IHM, [Drag-and-drop for older adults using touchscreen devices](https://dl.acm.org/doi/10.1145/2670444.2670460)
 - Chedru & Geschwind, [Writing disturbances in acute confusional states](https://doi.org/10.1016/0028-3932(72)90019-2), Neuropsychologia 1972 (basis for the signature probe in doc 0002)
+- Fissler et al., [Jigsaw Puzzling Taps Multiple Cognitive Abilities and Is a Potential Protective Factor for Cognitive Aging](https://doi.org/10.3389/fnagi.2018.00299), Frontiers in Aging Neuroscience 2018 (basis for the visuospatial probe in doc 0008)
