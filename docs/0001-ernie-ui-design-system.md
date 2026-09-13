@@ -6,7 +6,7 @@
 | **Status** | Building |
 | **Owner** | @cpluntke |
 | **Last updated** | 2026-09-13 |
-| **Links** | `packages/ernie-ui/`, `packages/ernie-ui/demo/`, Claude Design project (added after sync) |
+| **Links** | `packages/ernie-ui/`, `packages/ernie-ui/demo/`, [Claude Design project](https://claude.ai/design/p/6bc4daee-3aff-454e-a096-3a13f0e01b42) |
 
 > A small React component kit that bakes the 80+ design criteria into every part, so sketches and the prototype are built from pieces that are already right, and so Claude Design can generate screens from those same parts.
 
@@ -129,7 +129,7 @@ Typecheck (`tsc --noEmit`) and the ux-audit on the demo page. After the Claude D
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
 | M1 | 13 components, docs, demo, audit clean | today | done |
-| M2 | Sync to Claude Design, previews verified | today | in progress |
+| M2 | Sync to Claude Design, previews verified | today | done |
 | M3 | Add components the concept sketches need | sketch phase | not started |
 
 ## 8. Open questions
@@ -145,4 +145,5 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Base typography moved to `body` and every component root; synced to Claude Design | Standalone cards rendered in a serif fallback because base styles were scoped to `.ernie` |
 | 2026-09-13 | Created; 13 components built, demo audits clean | Infrastructure for the sketch phase and for the Claude Design sync |

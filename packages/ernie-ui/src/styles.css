@@ -38,22 +38,25 @@
   --ernie-measure: 40rem;       /* ~65 characters */
 }
 
-/* Base */
-.ernie-root, .ernie {
+/* Base: applied to the page and to every component root, so a component
+   dropped anywhere (a preview card, a design canvas, a plain page) is styled
+   without a wrapper or provider. */
+body, .ernie-root, .ernie,
+.ernie-screen, .ernie-topbar, .ernie-button, .ernie-heading, .ernie-text,
+.ernie-field, .ernie-choice, .ernie-person, .ernie-notice, .ernie-steps,
+.ernie-switch, .ernie-card, .ernie-confirm {
   font-family: var(--ernie-font);
   font-size: var(--ernie-text);
   line-height: var(--ernie-line-height);
   color: var(--ernie-ink);
-  background: var(--ernie-paper);
 }
-.ernie *, .ernie *::before, .ernie *::after { box-sizing: border-box; }
-.ernie :focus-visible {
+body, .ernie-root, .ernie { background: var(--ernie-paper); margin: 0; }
+body *, body *::before, body *::after { box-sizing: border-box; }
+:focus-visible {
   outline: 4px solid var(--ernie-focus);
   outline-offset: 3px;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .ernie * { transition: none; }
-}
+* { transition: none !important; animation: none !important; }
 
 /* Screen */
 .ernie-screen {

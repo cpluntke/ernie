@@ -16,6 +16,12 @@ Prototype web app built for a job application submission.
   `.claude/skills/design-doc/scripts/new_doc.py`) to create and update them
   so numbering, phase, and the index stay consistent.
 
+## Design system
+
+`packages/ernie-ui` is the component kit; every prototype screen is built from it
+(see `docs/0001-ernie-ui-design-system.md`). It is synced to Claude Design as
+project `ernie-ui` via `/design-sync`; config and previews live in `.design-sync/`.
+
 ## Before every PR that touches UI
 
 Run the `ux-critic` subagent (via `/ux-critique <url>` or the Agent tool)
