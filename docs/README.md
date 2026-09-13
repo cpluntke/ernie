@@ -4,6 +4,16 @@ Design docs for the ernie prototype. Each doc covers **both** product design and
 engineering design for one feature or slice, in one file, so we can iterate on
 the two together instead of keeping them in sync.
 
+## Quick start
+
+In Claude Code, run `/design-doc` (or just ask to spec a feature) and the
+skill scaffolds a numbered doc from the template and adds it to the index.
+To do it by hand:
+
+```bash
+python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
+```
+
 ## Conventions
 
 - **One file per feature or slice.** Copy `TEMPLATE.md` to
