@@ -130,32 +130,13 @@
         </button>
         <button type="button" role="radio" aria-checked="false" class="choice__option" data-mode="afar">
           <span class="choice__mark" aria-hidden="true"></span>
-          <span class="choice__text"><span>Together from afar</span><span class="choice__desc">With Anna, on her own phone</span></span>
+          <span class="choice__text"><span>Together from afar</span><span class="choice__desc">Anna joins from her own phone</span></span>
         </button>
       </div>
     </fieldset>
   </main>
 
-  <!-- Screen 2 (afar only): who are you -->
-  <main class="body body--scroll" id="screen-who" hidden>
-    <h1>Who are you?</h1>
-    <fieldset class="choice">
-      <legend class="choice__legend">So Anna can see which piece you are holding.</legend>
-      <div class="choice__options" role="radiogroup" aria-label="Who are you?" id="who-options">
-        <button type="button" role="radio" aria-checked="true" class="choice__option" data-who="Margaret">
-          <span class="choice__mark" aria-hidden="true">✓</span>
-          <span class="choice__text"><span>I am Margaret</span></span>
-        </button>
-        <button type="button" role="radio" aria-checked="false" class="choice__option" data-who="Anna">
-          <span class="choice__mark" aria-hidden="true"></span>
-          <span class="choice__text"><span>I am Anna</span></span>
-        </button>
-      </div>
-    </fieldset>
-    <div class="notice notice--info" id="afar-unavailable" hidden><span class="notice__icon" aria-hidden="true">i</span><div><p class="notice__title">Note</p><p>Playing from afar is not available on this phone right now. You can still play on your own.</p></div></div>
-  </main>
-
-  <!-- Screen 3: how many pieces -->
+  <!-- Screen 2: how many pieces -->
   <main class="body body--scroll" id="screen-pieces" hidden>
     <h1>How many pieces?</h1>
     <fieldset class="choice">
@@ -171,10 +152,9 @@
         </button>
       </div>
     </fieldset>
-    <p class="text" id="waiting" hidden>Looking for Anna. If she has already started, you will join her picture.</p>
   </main>
 
-  <!-- Screen 4: puzzle -->
+  <!-- Screen 3: puzzle -->
   <main class="body puzzle" id="screen-puzzle" hidden>
     <h1>Finish the picture</h1>
     <p class="text" id="instruction">Drag a piece onto the picture.</p>
@@ -184,7 +164,7 @@
     </div>
   </main>
 
-  <!-- Screen 5: done -->
+  <!-- Screen 4: done -->
   <main class="body body--scroll" id="screen-done" hidden>
     <h1 id="done-title">You did it!</h1>
     <div class="picture"><svg viewBox="0 0 1200 900" role="img" aria-label="The finished picture"><use href="#scene"></use></svg></div>
@@ -243,14 +223,15 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
   var XLINK = 'http://www.w3.org/1999/xlink';
   var PIC_W = 1200, PIC_H = 900;
+  var PARTNER = 'Anna';       // the mocked grandchild who plays from afar
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var $ = function (id) { return document.getElementById(id); };
-  var screens = { invite: $('screen-invite'), who: $('screen-who'), pieces: $('screen-pieces'), puzzle: $('screen-puzzle'), done: $('screen-done') };
+  var screens = { invite: $('screen-invite'), pieces: $('screen-pieces'), puzzle: $('screen-puzzle'), done: $('screen-done') };
   var footer = { next: $('next'), start: $('start'), hint: $('hint'), carryOn: $('carry-on') };
   var play = $('play');
 
   var mode = 'solo';         // solo | shared | afar
-  var me = 'Margaret';       // afar: who this phone is
   var pieceCount = 12;
   var game = null;
   var log = [];
@@ -266,7 +247,6 @@
   }
   function now() { return performance.now(); }
   function record(kind, extra) { var e = { t: Math.round(now()), kind: kind }; for (var k in extra) e[k] = extra[k]; log.push(e); }
-  // Seeded random, so two phones cut the same pieces from the same seed.
   function rng(seed) { var a = seed >>> 0; return function () { a += 0x6D2B79F5; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
   // ---------- jigsaw geometry ----------
@@ -328,7 +308,6 @@
     var layer = el('g', {}, play);
     var tagLayer = el('g', { 'pointer-events': 'none' }, play);
 
-    // Initial scatter, from the same seed on every phone.
     var order = pieces.map(function (p) { return p.i; });
     for (var i = order.length - 1; i > 0; i--) { var j = Math.floor(rand() * (i + 1)); var tmp = order[i]; order[i] = order[j]; order[j] = tmp; }
     var initial = order.map(function (pi, n) {
@@ -360,7 +339,7 @@
     function setClusters(list) {
       layer.innerHTML = ''; clusters = [];
       list.forEach(function (c) { makeCluster(c.pieces.map(function (i) { return pieces[i]; }), c.tx, c.ty, c.locked); });
-      refreshHint(); updateStatus();
+      updateStatus();
     }
     function setT(cl, tx, ty) { cl.tx = tx; cl.ty = ty; cl.g.setAttribute('transform', 'translate(' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ')'); }
     function adjacent(a, b) {
@@ -416,7 +395,6 @@
       if (!snapped) record('drop', { piece: dragged.i, nearMiss: dist(cl.tx, cl.ty, M, M) < 2 * R });
       if (hintPiece && hintPiece.cluster.locked) hideHint();
       updateStatus();
-      net.sendState();
       if (lockedCount() === pieces.length) finish();
     }
 
@@ -427,7 +405,7 @@
       return pt.matrixTransform(play.getScreenCTM().inverse());
     }
     function heldByMe(cl) { for (var k in drags) if (drags[k].cl === cl) return true; return false; }
-    function heldByAnyone(cl) { return heldByMe(cl) || (peerHeld && peerHeld.cl === cl); }
+    function heldByAnyone(cl) { return heldByMe(cl) || (partner.holding === cl); }
     play.addEventListener('pointerdown', function (ev) {
       var node = ev.target.closest ? ev.target.closest('.piece') : null;
       if (!node) return;
@@ -439,21 +417,18 @@
       layer.appendChild(cl.g);
       cl.g.classList.add('cluster--dragging');
       var pt = svgPoint(ev);
-      drags[ev.pointerId] = { cl: cl, piece: p, sx: pt.x, sy: pt.y, tx: cl.tx, ty: cl.ty, curTx: cl.tx, curTy: cl.ty, path: [[pt.x, pt.y, Math.round(now())]], id: ev.pointerId };
+      drags[ev.pointerId] = { cl: cl, piece: p, sx: pt.x, sy: pt.y, tx: cl.tx, ty: cl.ty, path: [[pt.x, pt.y, Math.round(now())]] };
       lastTouched = p;
       try { play.setPointerCapture(ev.pointerId); } catch (e) {}
       if (!game.firstMoveAt) { game.firstMoveAt = now(); record('firstMove', { piece: p.i }); }
       record('pick', { piece: p.i, cluster: cl.pieces.length, pointer: ev.pointerId });
-      net.sendHold(cl);
     });
     play.addEventListener('pointermove', function (ev) {
       var d = drags[ev.pointerId]; if (!d) return;
       ev.preventDefault();
       var pt = svgPoint(ev);
       d.path.push([pt.x, pt.y, Math.round(now())]);
-      d.curTx = d.tx + (pt.x - d.sx); d.curTy = d.ty + (pt.y - d.sy);
-      setT(d.cl, d.curTx, d.curTy);
-      net.sendHold(d.cl);
+      setT(d.cl, d.tx + (pt.x - d.sx), d.ty + (pt.y - d.sy));
     });
     function endDrag(ev) {
       var d = drags[ev.pointerId]; if (!d) return;
@@ -463,49 +438,90 @@
       var len = 0; for (var i = 1; i < d.path.length; i++) len += Math.hypot(d.path[i][0] - d.path[i - 1][0], d.path[i][1] - d.path[i - 1][1]);
       var straight = Math.hypot(d.path[d.path.length - 1][0] - d.path[0][0], d.path[d.path.length - 1][1] - d.path[0][1]);
       record('release', { piece: d.piece.i, pathLen: Math.round(len), straight: Math.round(straight), samples: d.path.length, pointer: ev.pointerId });
-      net.sendHold(null);
       snap(d.cl, d.piece);
     }
     play.addEventListener('pointerup', endDrag);
     play.addEventListener('pointercancel', endDrag);
 
-    // ---------- the partner's held piece, from afar ----------
-    var peerHeld = null;
-    function showPeerHold(hold, name) {
-      if (peerHeld) { peerHeld.cl.g.classList.remove('cluster--peer'); peerHeld = null; }
+    // ---------- the mocked partner, playing "from afar" ----------
+    // Anna arrives a few seconds in, then every so often picks a loose piece, carries it to
+    // its place with her name on it, and clicks it in. She never takes the last pieces, and
+    // never touches a piece the person is holding.
+    var partner = { here: false, holding: null, placed: 0, timer: null, raf: null };
+    function partnerStart() {
+      partner.timer = setTimeout(function () {
+        partner.here = true; updateStatus(); record('partnerJoined', { name: PARTNER });
+        partnerSchedule(2500 + Math.random() * 3000);
+      }, 2500);
+    }
+    function partnerSchedule(delay) {
+      if (!partner.here) return;
+      partner.timer = setTimeout(partnerMove, delay == null ? 9000 + Math.random() * 8000 : delay);
+    }
+    function partnerMove() {
+      if (!partner.here || game.completedAt) return;
+      var left = pieces.length - lockedCount();
+      var loose = clusters.filter(function (c) { return !c.locked && !heldByMe(c); });
+      if (left <= 3 || partner.placed >= Math.floor(pieces.length / 3) || !loose.length) { partnerSchedule(); return; }
+      var singles = loose.filter(function (c) { return c.pieces.length === 1; });
+      var pool = singles.length ? singles : loose;
+      var cl = pool[Math.floor(Math.random() * pool.length)];
+      var p = cl.pieces[0];
+      partner.holding = cl;
+      layer.appendChild(cl.g); cl.g.classList.add('cluster--peer');
+      if (hintPiece && hintPiece.cluster === cl) hideHint();
+      var from = { x: cl.tx, y: cl.ty }, to = { x: M, y: M };
+      var lift = -0.25 * s;                                   // a small arc, like a hand lifting the piece
+      var duration = reduceMotion ? 0 : 1500, hold = 700;    // pause with the name tag on before moving
+      var t0 = null;
+      record('partnerPick', { piece: p.i });
+      function tag(x, y) {
+        tagLayer.innerHTML = '';
+        var cx = x + p.col * cw + cw / 2, cy = y + p.row * ch - 0.12 * s;
+        var wdt = PARTNER.length * 0.12 * s + 0.36 * s;
+        el('rect', { x: cx - wdt / 2, y: cy - 0.24 * s, width: wdt, height: 0.32 * s, rx: 0.08 * s, 'class': 'tag__box' }, tagLayer);
+        el('text', { x: cx, y: cy, 'text-anchor': 'middle', 'font-size': 0.21 * s, 'class': 'tag__text' }, tagLayer).textContent = PARTNER;
+      }
+      tag(from.x, from.y);
+      function done() {
+        setT(cl, to.x, to.y);
+        cl.g.classList.remove('cluster--peer'); tagLayer.innerHTML = '';
+        partner.holding = null;
+        lock(cl); partner.placed++;
+        record('snap', { piece: p.i, to: 'board', pieces: cl.pieces.length, by: 'partner' });
+        updateStatus();
+        if (lockedCount() === pieces.length) finish(); else partnerSchedule();
+      }
+      function step(ts) {
+        if (!partner.here) return;
+        if (t0 === null) t0 = ts;
+        var u = Math.min(1, (ts - t0) / duration);
+        var e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+        var x = from.x + (to.x - from.x) * e, y = from.y + (to.y - from.y) * e + lift * Math.sin(Math.PI * u);
+        setT(cl, x, y); tag(x, y);
+        if (u < 1) partner.raf = requestAnimationFrame(step); else done();
+      }
+      partner.timer = setTimeout(function () { if (duration === 0) done(); else partner.raf = requestAnimationFrame(step); }, hold);
+    }
+    function partnerStop() {
+      partner.here = false; clearTimeout(partner.timer); if (partner.raf) cancelAnimationFrame(partner.raf);
+      if (partner.holding) { partner.holding.g.classList.remove('cluster--peer'); partner.holding = null; }
       tagLayer.innerHTML = '';
-      if (!hold) return;
-      var p = pieces[hold.p]; if (!p) return;
-      var cl = p.cluster;
-      if (cl.locked || heldByMe(cl)) return;
-      layer.appendChild(cl.g);
-      setT(cl, hold.tx, hold.ty);
-      cl.g.classList.add('cluster--peer');
-      peerHeld = { cl: cl };
-      var x = hold.tx + p.col * cw + cw / 2, y = hold.ty + p.row * ch - 0.1 * s;
-      var label = name || 'Someone';
-      var wdt = label.length * 0.11 * s + 0.3 * s;
-      el('rect', { x: x - wdt / 2, y: y - 0.22 * s, width: wdt, height: 0.3 * s, rx: 0.08 * s, 'class': 'tag__box' }, tagLayer);
-      el('text', { x: x, y: y, 'text-anchor': 'middle', 'font-size': 0.2 * s, 'class': 'tag__text' }, tagLayer).textContent = label;
     }
 
     // ---------- hint ----------
     function showHint() {
-      var p = lastTouched && !lastTouched.cluster.locked ? lastTouched : null;
-      if (!p) { var loose = pieces.filter(function (q) { return !q.cluster.locked; }); p = loose[Math.floor(Math.random() * loose.length)]; }
+      var p = lastTouched && !lastTouched.cluster.locked && partner.holding !== lastTouched.cluster ? lastTouched : null;
+      if (!p) { var loose = pieces.filter(function (q) { return !q.cluster.locked && partner.holding !== q.cluster; }); p = loose[Math.floor(Math.random() * loose.length)]; }
       if (!p) return;
       hintPiece = p;
-      refreshHint();
-      $('instruction').textContent = 'The outlined piece goes in the outlined spot.';
-      record('hint', { piece: p.i });
-    }
-    function refreshHint() {
-      if (!hintPiece) return;
-      hintSlot.setAttribute('d', hintPiece.d);
+      hintSlot.setAttribute('d', p.d);
       hintSlot.setAttribute('transform', 'translate(' + M + ' ' + M + ')');
       hintSlot.setAttribute('visibility', 'visible');
-      var o = hintPiece.node.querySelector('.piece__outline');
+      var o = p.node.querySelector('.piece__outline');
       o.setAttribute('stroke', '#1e40af'); o.setAttribute('stroke-width', '8');
+      $('instruction').textContent = 'The outlined piece goes in the outlined spot.';
+      record('hint', { piece: p.i });
     }
     function hideHint() {
       if (!hintPiece) return;
@@ -513,122 +529,59 @@
       var o = hintPiece.node.querySelector('.piece__outline');
       o.setAttribute('stroke', '#4b5563'); o.setAttribute('stroke-width', '4');
       hintPiece = null;
-      $('instruction').textContent = mode === 'shared' ? 'Two can play at once. Each take a piece.' : 'Drag a piece onto the picture.';
+      $('instruction').textContent = instructionFor(mode);
     }
     function updateStatus() {
       var left = pieces.length - lockedCount();
-      var who = mode === 'afar' && net.partner ? ' · ' + net.partner + ' is here' : (mode === 'afar' ? ' · Waiting for ' + net.partnerExpected() : '');
+      var who = mode === 'afar' ? (partner.here ? ' · ' + PARTNER + ' is here' : ' · Waiting for ' + PARTNER) : '';
       $('status').textContent = (left === 0 ? 'All in place.' : left === 1 ? '1 piece left' : left + ' pieces left') + who;
     }
     function finish() {
       if (game.completedAt) return;
       record('complete', {});
       game.completedAt = now();
+      partnerStop();
       renderMetrics();
       $('done-title').textContent = mode === 'solo' ? 'You did it!' : 'You did it together!';
-      $('done-text').textContent = 'All ' + pieces.length + ' pieces are in place.';
+      $('done-text').textContent = mode === 'afar' ? 'All ' + pieces.length + ' pieces are in place. ' + PARTNER + ' put in ' + partner.placed + ' of them.' : 'All ' + pieces.length + ' pieces are in place.';
       show('done');
     }
 
-    // apply a full state from the partner, keeping my own finger where it is
-    function applyClusters(list) {
-      var mine = Object.keys(drags).map(function (k) { return drags[k]; });
-      setClusters(list);
-      mine.forEach(function (d) { d.cl = d.piece.cluster; layer.appendChild(d.cl.g); d.cl.g.classList.add('cluster--dragging'); setT(d.cl, d.curTx, d.curTy); });
-      if (lockedCount() === pieces.length) finish();
-    }
-
     setClusters(restoreClusters || initial);
+    if (mode === 'afar') partnerStart();
     return {
-      count: count, seed: seed, pieces: pieces, showHint: showHint, hideHint: hideHint, updateStatus: updateStatus,
-      applyClusters: applyClusters, showPeerHold: showPeerHold, snapshot: snapshot,
+      count: count, seed: seed, pieces: pieces, showHint: showHint, hideHint: hideHint, stop: partnerStop, snapshot: snapshot,
+      partnerPlaced: function () { return partner.placed; },
       startedAt: now(), firstMoveAt: null, completedAt: null
     };
   }
 
-  // ---------- playing from afar: the room ----------
-  var net = {
-    room: null, partner: null, joined: false, unsub: [],
-    partnerExpected: function () { return me === 'Anna' ? 'Margaret' : 'Anna'; },
-    connect: function () {
-      if (!(window.claude && window.claude.use)) return Promise.resolve(null);
-      return window.claude.use('room').then(function (room) { net.room = room; return room; }).catch(function () { return null; });
-    },
-    join: function () {
-      var room = net.room; if (!room || net.joined) return;
-      net.joined = true;
-      room.presence({ name: me, hold: null });
-      net.unsub.push(room.on('state', function (msg) {
-        if (msg.sameTab || !msg.data || typeof msg.data !== 'object') return;
-        var st = msg.data;
-        if (!(st.count === 12 || st.count === 20) || typeof st.seed !== 'number' || !Array.isArray(st.clusters)) return;
-        net.applyState(st);
-      }));
-      net.unsub.push(room.on('hello', function (msg) { if (!msg.sameTab && game && current === 'puzzle') net.sendState(); }));
-      net.unsub.push(room.onPeers(function (change) {
-        var other = null;
-        change.peers.forEach(function (p) { if (!p.sameTab && p.presence && typeof p.presence.name === 'string') other = p; });
-        net.partner = other ? other.presence.name.slice(0, 24) : null;
-        if (game) {
-          game.updateStatus();
-          var hold = other && other.presence.hold && typeof other.presence.hold === 'object' ? other.presence.hold : null;
-          if (hold && typeof hold.p === 'number' && typeof hold.tx === 'number' && typeof hold.ty === 'number') game.showPeerHold(hold, net.partner);
-          else game.showPeerHold(null);
-        }
-        if (change.joined.some(function (p) { return !p.sameTab; }) && game && current === 'puzzle') net.sendState();
-      }));
-      room.emit('hello', {});
-    },
-    leave: function () {
-      net.unsub.forEach(function (u) { try { u(); } catch (e) {} }); net.unsub = [];
-      if (net.room && net.joined) net.room.presence({ name: null, hold: null });
-      net.joined = false; net.partner = null;
-    },
-    sendState: function () {
-      if (mode !== 'afar' || !net.room || !net.joined || !game) return;
-      net.room.emit('state', game.snapshot());
-    },
-    sendHold: function (cl) {
-      if (mode !== 'afar' || !net.room || !net.joined) return;
-      net.room.presence({ hold: cl ? { p: cl.pieces[0].i, tx: Math.round(cl.tx), ty: Math.round(cl.ty) } : null });
-    },
-    applyState: function (st) {
-      if (current !== 'puzzle' && current !== 'pieces') return;   // only while playing or about to
-      if (!game || game.seed !== st.seed || game.count !== st.count) {
-        pieceCount = st.count;
-        log = []; record('start', { count: st.count, mode: mode, me: me, joined: true });
-        game = buildGame(st.count, st.seed, st.clusters);
-        show('puzzle');
-      } else {
-        game.applyClusters(st.clusters);
-      }
-    }
-  };
-
   // ---------- metrics for the demo ----------
   function renderMetrics() {
+    var mine = function (e) { return e.by !== 'partner'; };
     var picks = log.filter(function (e) { return e.kind === 'pick'; }).length;
     var drops = log.filter(function (e) { return e.kind === 'drop'; });
-    var snaps = log.filter(function (e) { return e.kind === 'snap'; });
+    var snaps = log.filter(function (e) { return e.kind === 'snap'; }).filter(mine);
     var releases = log.filter(function (e) { return e.kind === 'release' && e.pathLen > 0; });
     var straightness = releases.length ? releases.reduce(function (a, e) { return a + e.straight / Math.max(e.pathLen, 1); }, 0) / releases.length : 0;
     var perPiece = {}; drops.forEach(function (e) { perPiece[e.piece] = (perPiece[e.piece] || 0) + 1; });
     var persev = Object.keys(perPiece).filter(function (k) { return perPiece[k] >= 2; }).length;
     var coherent = 0; for (var i = 1; i < snaps.length; i++) { var a = game.pieces[snaps[i - 1].piece], b = game.pieces[snaps[i].piece]; if (Math.abs(a.col - b.col) + Math.abs(a.row - b.row) === 1) coherent++; }
     var coherence = snaps.length > 1 ? coherent / (snaps.length - 1) : 0;
-    var lapses = 0, longest = 0; for (var j = 1; j < log.length; j++) { var gap = log[j].t - log[j - 1].t; if (gap > 8000) lapses++; if (gap > longest) longest = gap; }
+    var own = log.filter(function (e) { return e.kind !== 'partnerPick' && e.kind !== 'partnerJoined' && mine(e); });
+    var lapses = 0, longest = 0; for (var j = 1; j < own.length; j++) { var gap = own[j].t - own[j - 1].t; if (gap > 8000) lapses++; if (gap > longest) longest = gap; }
     var secs = function (ms) { return (ms / 1000).toFixed(1) + ' s'; };
-    var played = mode === 'solo' ? 'On my own' : mode === 'shared' ? 'Together on one screen. Two people\'s moves cannot be told apart, so this session is engagement, not baseline' : 'Together with ' + (net.partner || net.partnerExpected()) + ' from afar. Only ' + me + '\'s own moves are counted; search time is shared, motor measures still hold';
+    var played = mode === 'solo' ? 'On my own' : mode === 'shared' ? 'Together on one screen. Two people\'s moves cannot be told apart, so this session is engagement, not baseline' : 'Together with ' + PARTNER + ' from afar (mocked). Only Margaret\'s own moves are counted; search time is shared work, motor measures still hold';
     var rows = [
       ['Played', played],
-      ['Time to first move', game.firstMoveAt ? secs(game.firstMoveAt - game.startedAt) : 'no move on this phone'],
+      ['Time to first move', game.firstMoveAt ? secs(game.firstMoveAt - game.startedAt) : 'no move'],
       ['Total time', secs(game.completedAt - game.startedAt)],
-      ['Pieces picked up here', picks + ' (of ' + game.pieces.length + ')'],
-      ['Placed from this phone', snaps.length + ''],
+      ['Pieces picked up', picks + ' (of ' + game.pieces.length + ')'],
+      ['Placed by Margaret', snaps.length + (mode === 'afar' ? ' (' + PARTNER + ' placed ' + game.partnerPlaced() + ')' : '')],
       ['Drops that did not click in', drops.length + (drops.filter(function (e) { return e.nearMiss; }).length ? ' (' + drops.filter(function (e) { return e.nearMiss; }).length + ' near the board)' : '')],
       ['Same piece dropped loose twice or more', String(persev)],
-      ['Order coherence', snaps.length > 1 ? Math.round(coherence * 100) + '% of clicks next to the previous one' : 'not enough placements here'],
-      ['Drag straightness', releases.length ? Math.round(straightness * 100) + '% (100% is a straight line)' : 'no drags here'],
+      ['Order coherence', snaps.length > 1 ? Math.round(coherence * 100) + '% of clicks next to the previous one' : 'not enough placements'],
+      ['Drag straightness', releases.length ? Math.round(straightness * 100) + '% (100% is a straight line)' : 'no drags'],
       ['Pauses over 8 s', lapses + (longest > 8000 ? ' (longest ' + secs(longest) + ')' : '')]
     ];
     var t = $('metrics'); t.innerHTML = '';
@@ -637,16 +590,16 @@
 
   // ---------- screens ----------
   var current = 'invite';
+  function instructionFor(m) { return m === 'shared' ? 'Two can play at once. Each take a piece.' : m === 'afar' ? 'Drag a piece onto the picture. ' + PARTNER + ' will help.' : 'Drag a piece onto the picture.'; }
   function show(name) {
     current = name;
     for (var k in screens) screens[k].hidden = k !== name;
-    footer.next.hidden = !(name === 'invite' || name === 'who');
+    footer.next.hidden = name !== 'invite';
     footer.start.hidden = name !== 'pieces';
     footer.hint.hidden = name !== 'puzzle';
     footer.carryOn.hidden = name !== 'done';
     $('back').hidden = name === 'invite';
-    $('waiting').hidden = !(name === 'pieces' && mode === 'afar');
-    if (name === 'puzzle') $('instruction').textContent = mode === 'shared' ? 'Two can play at once. Each take a piece.' : 'Drag a piece onto the picture.';
+    if (name === 'puzzle') $('instruction').textContent = instructionFor(mode);
   }
   function pickOption(container, attr, value) {
     Array.prototype.forEach.call(container.querySelectorAll('button[role=radio]'), function (o) {
@@ -654,48 +607,32 @@
     });
   }
   function startPuzzle(restore) {
-    log = []; record('start', { count: pieceCount, mode: mode, me: me });
+    if (game) game.stop();
+    log = []; record('start', { count: pieceCount, mode: mode });
     var seed = restore ? restore.seed : (Math.random() * 4294967296) >>> 0;
     game = buildGame(pieceCount, seed, restore ? restore.clusters : null);
     show('puzzle');
-    net.sendState();
   }
-  function goHome() { net.leave(); game = null; mode = 'solo'; pickOption($('mode-options'), 'data-mode', 'solo'); show('invite'); }
+  function goHome() { if (game) game.stop(); game = null; mode = 'solo'; pickOption($('mode-options'), 'data-mode', 'solo'); show('invite'); }
 
   $('mode-options').addEventListener('click', function (ev) {
     var b = ev.target.closest('button[role=radio]'); if (!b) return;
     mode = b.getAttribute('data-mode'); pickOption(this, 'data-mode', mode);
   });
-  $('who-options').addEventListener('click', function (ev) {
-    var b = ev.target.closest('button[role=radio]'); if (!b) return;
-    me = b.getAttribute('data-who'); pickOption(this, 'data-who', me);
-  });
   $('count-options').addEventListener('click', function (ev) {
     var b = ev.target.closest('button[role=radio]'); if (!b) return;
     pieceCount = +b.getAttribute('data-count'); pickOption(this, 'data-count', String(pieceCount));
   });
-  footer.next.addEventListener('click', function () {
-    if (current === 'invite') {
-      if (mode === 'afar') { $('afar-unavailable').hidden = true; net.connect().then(function (room) { $('afar-unavailable').hidden = !!room; }); show('who'); }
-      else show('pieces');
-    } else if (current === 'who') {
-      if (net.room) { net.join(); show('pieces'); }
-      else { net.connect().then(function (room) { if (room) { net.join(); } else { mode = 'solo'; } show('pieces'); }); }
-    }
-  });
+  footer.next.addEventListener('click', function () { show('pieces'); });
   footer.start.addEventListener('click', function () { startPuzzle(); });
   footer.hint.addEventListener('click', function () { if (game) game.showHint(); });
   footer.carryOn.addEventListener('click', goHome);
-  $('back').addEventListener('click', function () {
-    if (current === 'who') show('invite');
-    else if (current === 'pieces') { if (mode === 'afar') { net.leave(); show('who'); } else show('invite'); }
-    else goHome();
-  });
+  $('back').addEventListener('click', function () { if (current === 'pieces') show('invite'); else goHome(); });
   $('home').addEventListener('click', goHome);
 
   // Keep a half-finished puzzle across a page update.
   function boot(data) {
-    if (data && data.screen === 'puzzle' && data.game && data.mode !== 'afar') { mode = data.mode || 'solo'; pieceCount = data.game.count; startPuzzle(data.game); }
+    if (data && data.screen === 'puzzle' && data.game) { mode = data.mode || 'solo'; pieceCount = data.game.count; startPuzzle(data.game); }
     else show('invite');
   }
   if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
