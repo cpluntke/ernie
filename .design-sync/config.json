@@ -1,0 +1,46 @@
+{
+  "projectId": "6bc4daee-3aff-454e-a096-3a13f0e01b42",
+  "pkg": "ernie-ui",
+  "globalName": "ErnieUI",
+  "shape": "package",
+  "buildCmd": "npm run build",
+  "cssEntry": "dist/styles.css",
+  "docsDir": "docs/components",
+  "guidelinesGlob": "docs/guides/**/*.md",
+  "overrides": {
+    "Button": {
+      "cardMode": "column"
+    },
+    "Card": {
+      "cardMode": "column"
+    },
+    "ChoiceList": {
+      "cardMode": "column"
+    },
+    "Confirm": {
+      "cardMode": "column"
+    },
+    "Notice": {
+      "cardMode": "column"
+    },
+    "PersonTile": {
+      "cardMode": "column"
+    },
+    "Steps": {
+      "cardMode": "column"
+    },
+    "Switch": {
+      "cardMode": "column"
+    },
+    "TextField": {
+      "cardMode": "column"
+    },
+    "TopBar": {
+      "cardMode": "column"
+    },
+    "Screen": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
