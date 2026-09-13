@@ -68,3 +68,4 @@ python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
 | 0004 | [Find the family](0004-find-the-family.md) | Sketch | Draft |
 | 0005 | [Clues from the family](0005-clues-from-the-family.md) | Sketch | Draft |
 | 0006 | [Coherence chat](0006-coherence-chat.md) | Sketch | Draft |
+| 0007 | [Data capture and analysis](0007-data-capture-and-analysis.md) | Sketch | Draft |
