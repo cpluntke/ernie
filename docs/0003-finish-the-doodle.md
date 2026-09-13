@@ -43,10 +43,6 @@ with earlier days. Today there is nothing at home that gives either.
   (shared with 0002).
 - Empty state is still worth opening: with no doodle waiting, the person can
   start one for the family instead.
-- The prototype ships with three started doodles, drawn by us in the
-  grandchild's name (e.g. Anna), one per day for the demo: simple, inviting
-  halves such as a house with no roof, a cat with no tail, a flower with no
-  petals. Each has a one-line note from Anna ("Can you finish my cat?").
 
 **Non-goals** (explicitly out of scope for this iteration)
 - Real-time drawing together.
@@ -91,7 +87,7 @@ Family:
 
 | Screen | Purpose | Primary action | States (empty / loading / error / success) |
 |--------|---------|----------------|--------------------------------------------|
-| Invite | announce the doodle | Show me Anna's drawing | nothing waiting ("Draw something for Anna?"); one waiting (with Anna's note); already finished today; all three seeded doodles finished ("Anna will send another soon") |
+| Invite | announce the doodle | Show me Anna's drawing | nothing waiting ("Draw something for Anna?"); one waiting; already finished today |
 | Draw | finish the picture | Send it back to Anna | untouched (Send disabled); drawn; after Undo; after Start my part again |
 | Confirm send | prevent accidental send | Yes, send it | default |
 | Sent | close the loop | Carry on | sent; could not send (kept, "We'll send it when the phone is back online") |
@@ -135,9 +131,7 @@ person who never draws but opens it (log the open; that is still signal).
 ### 6.1 Approach
 
 Rough note. Same canvas and stroke recorder as 0002. A doodle is a list of
-strokes tagged by author. The three seeded starts are stored as stroke
-lists in `seed.json` (drawn once by us on the same pad, so they render
-identically on any width) with the author set to the grandchild and a note. For the prototype, both roles live in one web app
+strokes tagged by author. For the prototype, both roles live in one web app
 under two routes, sharing a local store, so the demo can be run in one
 browser with a role switch. A real transport is a later slice. **Riskiest
 unknown:** demonstrating two sides convincingly without a backend; and
@@ -157,7 +151,6 @@ N/A.
 |----------|--------|-------------------------|-----|
 | Start of the doodle | family draws or picks a prompt | photo to trace, blank page | a half-drawn thing invites completion; blank pages are hard to start |
 | Two-side demo | one app, two routes, shared store | separate backend | buildable in the hour; transport is not what the sketch tests |
-| Demo content | three starts drawn by us as the grandchild, with notes | random shapes, family draws live | the demo must show the pull without a family member present |
 
 ### 6.5 Dependencies and risks
 
@@ -185,6 +178,5 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
-| 2026-09-13 | Three started doodles seeded, drawn by us in the grandchild's name, one per demo day | Owner request |
 | 2026-09-13 | Family side is a mock route with seeded starts; no real link or sending | Per 0007: family link mocked for now |
 | 2026-09-13 | Created | Brainstorm pick: the social pull that makes a missed day meaningful |
