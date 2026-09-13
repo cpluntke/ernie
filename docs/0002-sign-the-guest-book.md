@@ -121,18 +121,70 @@ accepted; a mouse on desktop works the same.
 
 ### 6.1 Approach
 
-Rough note. A canvas pad records pointer events as timestamped points per
-stroke. From those: stroke count, total duration, time to first stroke, path
-length, mean and variance of speed, pauses over 300 ms, bounding box, and a
-jitter measure (high-frequency direction changes). Store one record per day
-in local storage for the prototype; a family view reads the series. Shares
-the stroke recorder with 0003. **Riskiest unknown:** whether finger
-signatures are stable enough day to day for a change to stand out, and
-whether `touch-action: none` behaves on iPad Safari.
+A canvas pad records pointer events (x, y, timestamp) grouped into strokes,
+using `getCoalescedEvents()` where available for the full sample rate. Each
+stroke is resampled to uniform time before differentiating, so browser
+sampling jitter does not dominate speed and smoothness. We do not judge
+whether the signature is "good"; we extract a small set of kinematic
+features, build a personal baseline from the first week, and report how far
+today sits from that baseline. Writing disturbance is a classic bedside sign
+of acute confusional states (Chedru and Geschwind, 1972), which is why a
+signature is a reasonable probe.
+
+**Features per signature**
+
+| Feature | What it captures | Compute |
+|---|---|---|
+| Time to first stroke | initiation, arousal | first pointerdown minus pad shown |
+| Total time | slowing | last pointerup minus first pointerdown |
+| In-air time | hesitation | sum of gaps between strokes |
+| Number of strokes | fragmentation | pen lifts |
+| Mean speed | psychomotor slowing | path length over drawing time |
+| Smoothness | tremor, wobble | log dimensionless jerk per stroke, averaged; fallback: velocity sign changes per cm |
+| Size | expansion or shrinking | bounding box width and height, normalised by pad width |
+| Shape distance | still looks like theirs | resample to N points, normalise position and scale, DTW (or mean point distance) against the baseline template |
+
+**Baseline and deviation**
+
+1. Baseline is days 2 to 7 (day 1 is skipped for the learning effect). Store
+   the median and MAD per feature; robust to one odd day.
+2. Each day, a robust z-score per feature: (today − median) / (1.4826 × MAD).
+3. Composite deviation = mean of |z| across features, plus the count of
+   features beyond 2. Two or more features beyond 2 is "different from
+   usual"; three such days in a row is a trend, one is a blip.
+4. Keep the sign: slower and shakier reads differently from faster and larger.
+5. Rolling seven-day standard deviation per feature is itself a feature,
+   because delirium fluctuates.
+
+**What is shown**
+
+The person sees only a thank you. The family view gets one plain sentence
+("Margaret's signature was slower and shakier than usual today") over a
+seven-day strip of the signatures themselves.
+
+**Prototype scope.** Seven features and robust z-scores (about a hundred
+lines), one record per day in local storage, and a demo mode that records
+five signatures in a row as the baseline and a sixth as "today" so the
+family view tells the story in one sitting. Shares the stroke recorder with
+0003. **Riskiest unknown:** whether finger signatures are stable enough day
+to day for a change to stand out, and whether `touch-action: none` behaves
+on iPad Safari.
 
 ### 6.2 Data model
 
-N/A at sketch depth. Sketch: `{ day, strokes: [[{x,y,t}]], metrics, dateAnswer, inputType }`.
+Sketch, one record per signing:
+
+```
+{ day, deviceId, inputType: "finger" | "stylus" | "mouse", padWidth,
+  shownAt, strokes: [[{x, y, t}]],
+  features: { timeToFirst, totalTime, inAirTime, strokeCount, meanSpeed,
+              smoothness, width, height, shapeDistance },
+  dateAnswer: { offered: [...], picked, correct } }
+```
+
+Baseline per device: `{ deviceId, days: [...], median: {...}, mad: {...}, template: [{x, y}] }`.
+Baselines are never compared across devices; a phone and a tablet each get
+their own.
 
 ### 6.3 API / interfaces
 
@@ -144,6 +196,8 @@ N/A.
 |----------|--------|-------------------------|-----|
 | Date entry | tap one of 3–4 day buttons | write the date by hand | handwriting needs recognition; buttons are scoreable and fit the kit |
 | Feedback | thank you only | show a score, show "shakier than usual" | fear of failure is the biggest barrier; the trend belongs to the family view |
+| Signal | personal baseline, robust z per feature | absolute thresholds, signature verification | no population norm for finger signatures exists; delirium is a change from the person's own baseline |
+| Pressure | not used | pressure as a feature | fingers on iPad report no pressure |
 
 ### 6.5 Dependencies and risks
 
@@ -171,4 +225,5 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Metrics and baseline method written into 6.1 and 6.2 | Review with owner: seven kinematic features, robust z against a personal baseline, demo mode for the prototype |
 | 2026-09-13 | Created | Brainstorm pick: drawing-based baseline with the strongest personal reference |

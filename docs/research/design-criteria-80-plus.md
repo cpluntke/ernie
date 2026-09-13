@@ -207,3 +207,4 @@ From NN/G's guidance on usability testing with older adults:
 - Pew Research, [Internet use, smartphone ownership, digital divides in the US](https://www.pewresearch.org/short-reads/2026/01/08/internet-use-smartphone-ownership-digital-divides-in-u-s/)
 - Bentley University UXC, [Designing Mobile Experiences with Seniors in Mind](https://www.bentley.edu/centers/user-experience-center/designing-mobile-experiences-seniors-mind)
 - ACM IHM, [Drag-and-drop for older adults using touchscreen devices](https://dl.acm.org/doi/10.1145/2670444.2670460)
+- Chedru & Geschwind, [Writing disturbances in acute confusional states](https://doi.org/10.1016/0028-3932(72)90019-2), Neuropsychologia 1972 (basis for the signature probe in doc 0002)
