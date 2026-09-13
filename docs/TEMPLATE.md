@@ -2,12 +2,17 @@
 
 | | |
 |---|---|
+| **Phase** | Sketch |
 | **Status** | Draft |
 | **Owner** | @name |
 | **Last updated** | YYYY-MM-DD |
 | **Links** | issue / PR / mockups / prototype URL |
 
 > One-sentence summary: what we are building and why.
+
+> **Sketch phase:** fill sections 1–5 and 8–9; leave 6 as a rough note and 7 as
+> N/A. **Prototype phase:** fill everything, and record in the Decision log
+> what the sketch taught us and what changed.
 
 ## 1. Problem
 
@@ -33,6 +38,15 @@ without it? Keep to one short paragraph.
 How we'll know it worked. Prefer observable outcomes over feature checklists.
 
 - 
+
+### 4.1 Sketch verdict
+
+Filled in at the mid-way review. What we tried, what we learned, and whether
+it goes forward.
+
+| Tried | Learned | Verdict (Selected / Parked / Folded into NNNN) |
+|-------|---------|-------------------------------------------------|
+| | | |
 
 ## 5. Product design
 

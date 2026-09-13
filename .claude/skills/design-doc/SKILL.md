@@ -1,6 +1,6 @@
 ---
 name: design-doc
-description: Create, update, or review a combined product + engineering design doc in docs/ using the repo's TEMPLATE.md. Use this whenever the user wants to plan, spec, scope, or write up a feature, flow, screen, or technical change for the ernie prototype, even if they don't say "design doc" — phrases like "let's spec out", "write up the plan for", "how should we build", "document the approach", "update the doc for", or "mark X as shipped" all belong here. Also use it when adding a decision or open question to an existing doc.
+description: Create, update, or review a combined product + engineering design doc in docs/ using the repo's TEMPLATE.md. Covers both project phases, sketch docs and prototype docs, and the mid-way review that selects sketches. Use this whenever the user wants to plan, spec, scope, or write up a feature, flow, screen, or technical change for the ernie prototype, even if they don't say "design doc" — phrases like "let's spec out", "write up the plan for", "how should we build", "document the approach", "update the doc for", "mark X as shipped", "add a sketch for", "which sketches go forward", or "promote X to the prototype" all belong here. Also use it when adding a decision or open question to an existing doc.
 ---
 
 # Design doc
@@ -10,6 +10,33 @@ together, so the two stay in sync while we iterate fast. The format lives in
 `docs/TEMPLATE.md` and the conventions in `docs/README.md`. Read both before
 writing anything so the new doc matches its siblings.
 
+## The two phases
+
+The project runs as a **sketch phase** (many cheap explorations) followed by a
+**prototype phase** (the best sketches built into a runnable app for the job
+application). The same doc carries an idea through both, so treat the phase
+in the header as the main signal for how much detail to write:
+
+- **Sketch docs** are light. Problem, users, goals and non-goals, success
+  criteria, and product design get real thought. Engineering (section 6) is
+  a few sentences on feasibility and the riskiest unknown; the plan
+  (section 7) is N/A. A sketch doc should take minutes to write, because
+  its job is to make the sketch worth doing, not to specify a build.
+- **Prototype docs** are full. When a sketch is selected, change `Phase` to
+  `Prototype` and status to `Building`, fill in sections 6 and 7 properly,
+  and log in the Decision log what the sketch taught us and what changed as
+  a result. Don't start a new doc; the sketch history is part of the record.
+
+### Mid-way review
+
+When asked which sketches should go forward, or to run the review: read every
+sketch doc, fill in section 4.1 (tried / learned / verdict) for each from
+what the user reports and what's in `docs/assets/`, set status to `Selected`,
+`Parked`, or `Folded into NNNN`, and update the index. Present the verdicts
+as a short table with one line of reasoning each so the user can override
+before anything is promoted. The prototype must be finishable by the
+submission date, so favour fewer, more complete slices over breadth.
+
 ## Creating a new doc
 
 1. Check `docs/` for an existing doc on the same topic. If one exists, update
@@ -18,7 +45,7 @@ writing anything so the new doc matches its siblings.
    template, fills the header, and adds a row to the index in `docs/README.md`:
 
    ```bash
-   python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner "@name"
+   python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner "@name" --phase Sketch
    ```
 
 3. Fill in the sections from what the user has told you and what the codebase
@@ -59,8 +86,9 @@ with them as owner rather than presenting it as settled.
 
 Edit in place. The doc is a living record, so:
 
-- **Status changes** (Draft → In review → Building → Shipped → Superseded by
-  NNNN): update the header table and the index row in `docs/README.md`.
+- **Status and phase changes** (sketch: Draft → Sketched → Selected / Parked /
+  Folded into NNNN; prototype: Building → Shipped): update the header table
+  and the index row in `docs/README.md`.
 - **Meaningful design changes**: make the edit, bump `Last updated`, and add
   a row at the top of the Decision log saying what changed and why. Don't
   rewrite history in the body; the log is what carries it.

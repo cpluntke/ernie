@@ -5,7 +5,7 @@ Picks the next sequential number, copies the template with the header filled
 in, and appends a row to the index table in docs/README.md.
 
 Usage:
-    python3 new_doc.py "Short title" [--owner @name] [--status Draft]
+    python3 new_doc.py "Short title" [--owner @name] [--phase Sketch|Prototype] [--status Draft]
 """
 import argparse
 import datetime
@@ -44,6 +44,8 @@ def main() -> int:
     ap.add_argument("title", help="Short human-readable title")
     ap.add_argument("--owner", default="@owner", help="Owner handle (default: @owner)")
     ap.add_argument("--status", default="Draft", help="Initial status (default: Draft)")
+    ap.add_argument("--phase", default="Sketch", choices=["Sketch", "Prototype"],
+                    help="Project phase this doc belongs to (default: Sketch)")
     args = ap.parse_args()
 
     docs = repo_root() / "docs"
@@ -64,6 +66,7 @@ def main() -> int:
     today = datetime.date.today().isoformat()
     body = template.read_text()
     body = body.replace("# NNNN — <Feature or slice name>", f"# {nnnn} — {args.title}", 1)
+    body = body.replace("| **Phase** | Sketch |", f"| **Phase** | {args.phase} |", 1)
     body = body.replace("| **Status** | Draft |", f"| **Status** | {args.status} |", 1)
     body = body.replace("| **Owner** | @name |", f"| **Owner** | {args.owner} |", 1)
     body = body.replace("| **Last updated** | YYYY-MM-DD |", f"| **Last updated** | {today} |", 1)
@@ -76,8 +79,8 @@ def main() -> int:
     # Add index row; replace the placeholder row if it's still there.
     if readme.exists():
         text = readme.read_text()
-        row = f"| {nnnn} | [{args.title}]({dest.name}) | {args.status} |"
-        placeholder = "| — | _none yet_ | |"
+        row = f"| {nnnn} | [{args.title}]({dest.name}) | {args.phase} | {args.status} |"
+        placeholder = "| — | _none yet_ | | |"
         if placeholder in text:
             text = text.replace(placeholder, row, 1)
         else:

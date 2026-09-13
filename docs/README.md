@@ -4,6 +4,19 @@ Design docs for the ernie prototype. Each doc covers **both** product design and
 engineering design for one feature or slice, in one file, so we can iterate on
 the two together instead of keeping them in sync.
 
+## Two phases
+
+1. **Sketch phase.** Many small, cheap explorations. Each sketch gets its own
+   doc, kept light: problem, users, goals, product design, and a rough note on
+   engineering feasibility. Sketches may be paper, static mockups, or throwaway
+   code; the point is to learn what works.
+2. **Mid-way review.** Every sketch doc gets a verdict in section 4.1:
+   `Selected`, `Parked`, or `Folded into NNNN`.
+3. **Prototype phase.** Selected sketches move to `Phase: Prototype` in place.
+   The engineering sections get filled in properly and the doc drives the
+   runnable build submitted with the application. Parked docs stay in the
+   index as a record of what was considered.
+
 ## Quick start
 
 In Claude Code, run `/design-doc` (or just ask to spec a feature) and the
@@ -25,8 +38,12 @@ python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
 - **Iterate in place.** Update the doc as the design changes; log meaningful
   changes in the Decision log rather than rewriting history. Don't fork a new
   doc for a revision.
-- **Status lifecycle:** `Draft` → `In review` → `Building` → `Shipped` →
-  `Superseded by NNNN`. Update the status line in the header when it changes.
+- **Phase** is `Sketch` or `Prototype`. A doc changes phase in place when its
+  sketch is selected; don't start a second doc for the same idea.
+- **Status lifecycle.** Sketch phase: `Draft` → `Sketched` → `Selected` |
+  `Parked` | `Folded into NNNN`. Prototype phase: `Building` → `Shipped`.
+  `Superseded by NNNN` applies to either. Update the header and the index row
+  when it changes.
 - **Sketches and mockups** live in `docs/assets/NNNN/` and are linked from the
   doc. Low-fidelity is fine; a photo of a whiteboard counts.
 - **Open questions are first-class.** Anything unresolved goes in Open
@@ -34,6 +51,6 @@ python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
 
 ## Index
 
-| # | Doc | Status |
-|---|-----|--------|
-| — | _none yet_ | |
+| # | Doc | Phase | Status |
+|---|-----|-------|--------|
+| — | _none yet_ | | |
