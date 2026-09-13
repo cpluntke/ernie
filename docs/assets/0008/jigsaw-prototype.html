@@ -21,7 +21,53 @@
   :focus-visible { outline: 4px solid var(--ernie-focus); outline-offset: 3px; }
   button { font: inherit; }
 
-  .app { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+  .shell { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+  .demo-strip {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 0.75rem; padding: 0 0.75rem; min-height: 2.25rem;
+    background: #111827; color: #e5e7eb; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.8125rem;
+  }
+  .demo-strip__label { letter-spacing: 0.06em; text-transform: uppercase; color: #9ca3af; }
+  .demo-strip__btn {
+    margin-left: auto; min-height: 1.75rem; padding: 0 0.75rem; border-radius: 0.375rem; border: 1px solid #6b7280;
+    background: transparent; color: #e5e7eb; font: inherit; cursor: pointer;
+  }
+  .demo-strip__btn[aria-pressed="true"] { background: #e5e7eb; color: #111827; }
+  .row { flex: 1 1 auto; min-height: 0; display: flex; position: relative; }
+  .app { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; }
+  .backend {
+    flex: 0 0 26rem; width: 26rem; max-width: 100%; height: 100%; overflow-y: auto; border-left: 2px solid var(--ernie-border);
+    background: var(--ernie-surface); color: var(--ernie-ink); padding: 1rem; font-size: 0.875rem; line-height: 1.45;
+  }
+  .backend[hidden] { display: none !important; }
+  @media (max-width: 900px) {
+    .backend { position: absolute; inset: 0; width: auto; flex: none; border-left: 0; }
+  }
+  .backend h2 { font-size: 1rem; margin: 0 0 0.25rem; }
+  .backend h3 { font-size: 0.8125rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ernie-ink-soft); margin: 1.25rem 0 0.5rem; }
+  .backend .meta { color: var(--ernie-ink-soft); margin: 0 0 0.75rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.8125rem; }
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .tile { background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; padding: 0.5rem 0.625rem; }
+  .tile__k { font-size: 0.75rem; color: var(--ernie-ink-soft); }
+  .tile__v { font-size: 1.375rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .tile__d { font-size: 0.75rem; color: var(--ernie-ink-soft); }
+  .chart { background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; padding: 0.5rem 0.625rem; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .tick { font-size: 10px; fill: var(--ernie-ink-soft); font-variant-numeric: tabular-nums; }
+  .chart .grid { stroke: #d1d5db; stroke-width: 1; }
+  .chart .base { stroke: var(--ernie-border); stroke-width: 1; }
+  .chart .bar { fill: var(--ernie-primary); }
+  .chart .bar--partner { fill: #93c5fd; }
+  .chart .median { stroke: var(--ernie-ink); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .chart .empty { fill: var(--ernie-ink-soft); font-size: 12px; }
+  .chart__title { font-size: 0.8125rem; font-weight: 700; margin: 0 0 0.25rem; }
+  .chart__sub { font-size: 0.75rem; color: var(--ernie-ink-soft); margin: 0 0 0.25rem; }
+  .log { list-style: none; margin: 0; padding: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.75rem; background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; max-height: 14rem; overflow-y: auto; }
+  .log li { padding: 0.2rem 0.5rem; border-bottom: 1px solid #e5e7eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log li:first-child { background: var(--ernie-selected); }
+  .log .t { color: var(--ernie-ink-soft); display: inline-block; width: 4.25rem; }
+  .log .partner { color: var(--ernie-success); }
+  pre.payload { margin: 0; padding: 0.5rem; font-size: 0.72rem; line-height: 1.35; background: #111827; color: #e5e7eb; border-radius: 0.5rem; overflow-x: auto; max-height: 16rem; }
+  .backend .note { font-size: 0.75rem; color: var(--ernie-ink-soft); margin: 0.5rem 0 0; }
   .topbar {
     display: flex; align-items: center; gap: var(--ernie-space-2); padding: var(--ernie-space-2);
     border-bottom: 2px solid var(--ernie-border); background: var(--ernie-paper); flex: 0 0 auto;
@@ -106,6 +152,13 @@
   [hidden] { display: none !important; }
 </style>
 
+<div class="shell">
+<div class="demo-strip">
+  <span class="demo-strip__label">Demo</span>
+  <span>Piece Together the Photo · sketch 0008</span>
+  <button type="button" class="demo-strip__btn" id="backend-toggle" aria-pressed="false" aria-controls="backend">Backend view</button>
+</div>
+<div class="row">
 <div class="app">
   <header class="topbar">
     <button class="btn btn--secondary" id="back" type="button"><span class="btn__icon" aria-hidden="true">←</span><span>Go back</span></button>
@@ -186,6 +239,26 @@
   </footer>
 </div>
 
+<aside class="backend" id="backend" hidden aria-label="Backend view: statistics being collected">
+  <h2>Backend view</h2>
+  <p class="meta" id="be-meta">No session yet. Start a puzzle and the statistics appear here as they are collected.</p>
+  <h3>Session so far</h3>
+  <div class="tiles" id="be-tiles"></div>
+  <h3>Seconds between placements</h3>
+  <div class="chart" id="be-chart-search"></div>
+  <h3>Drag straightness per drag</h3>
+  <div class="chart" id="be-chart-straight"></div>
+  <h3>Event stream</h3>
+  <ul class="log" id="be-log"></ul>
+  <p class="note">Newest first. Every line is one event as the phone would send it to <code>POST /api/events</code> (doc 0007). Raw pointer paths are kept per drag; only their sample count is shown here.</p>
+  <h3>Last event, as sent</h3>
+  <pre class="payload" id="be-payload">{}</pre>
+  <h3>Observation, as the server would derive it</h3>
+  <pre class="payload" id="be-observation">{}</pre>
+</aside>
+</div>
+</div>
+
 <!-- The stand-in "photo": one drawn scene, reused by every piece through <use>. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -246,7 +319,7 @@
     return n;
   }
   function now() { return performance.now(); }
-  function record(kind, extra) { var e = { t: Math.round(now()), kind: kind }; for (var k in extra) e[k] = extra[k]; log.push(e); }
+  function record(kind, extra) { var e = { t: Math.round(now()), kind: kind }; for (var k in extra) e[k] = extra[k]; log.push(e); backend.schedule(); }
   function rng(seed) { var a = seed >>> 0; return function () { a += 0x6D2B79F5; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
   // ---------- jigsaw geometry ----------
@@ -437,7 +510,7 @@
       clamp(d.cl);
       var len = 0; for (var i = 1; i < d.path.length; i++) len += Math.hypot(d.path[i][0] - d.path[i - 1][0], d.path[i][1] - d.path[i - 1][1]);
       var straight = Math.hypot(d.path[d.path.length - 1][0] - d.path[0][0], d.path[d.path.length - 1][1] - d.path[0][1]);
-      record('release', { piece: d.piece.i, pathLen: Math.round(len), straight: Math.round(straight), samples: d.path.length, pointer: ev.pointerId });
+      record('release', { piece: d.piece.i, pathLen: Math.round(len), straight: Math.round(straight), samples: d.path.length, durationMs: d.path[d.path.length - 1][2] - d.path[0][2], pointer: ev.pointerId });
       snap(d.cl, d.piece);
     }
     play.addEventListener('pointerup', endDrag);
@@ -556,33 +629,133 @@
     };
   }
 
-  // ---------- metrics for the demo ----------
-  function renderMetrics() {
+  // ---------- statistics, computed from the event log at any moment ----------
+  function features() {
+    var f = { mode: mode, count: game ? game.pieces.length : 0 };
     var mine = function (e) { return e.by !== 'partner'; };
-    var picks = log.filter(function (e) { return e.kind === 'pick'; }).length;
+    var start = log.length ? log[0].t : 0;
+    var picks = log.filter(function (e) { return e.kind === 'pick'; });
+    var releases = log.filter(function (e) { return e.kind === 'release'; });
     var drops = log.filter(function (e) { return e.kind === 'drop'; });
-    var snaps = log.filter(function (e) { return e.kind === 'snap'; }).filter(mine);
-    var releases = log.filter(function (e) { return e.kind === 'release' && e.pathLen > 0; });
-    var straightness = releases.length ? releases.reduce(function (a, e) { return a + e.straight / Math.max(e.pathLen, 1); }, 0) / releases.length : 0;
+    var snapsAll = log.filter(function (e) { return e.kind === 'snap'; });
+    var snaps = snapsAll.filter(mine);
+    var hints = log.filter(function (e) { return e.kind === 'hint'; });
+    var first = log.filter(function (e) { return e.kind === 'firstMove'; })[0];
+    var complete = log.filter(function (e) { return e.kind === 'complete'; })[0];
+    f.elapsedMs = (complete ? complete.t : Math.round(now())) - start;
+    f.timeToFirstMoveMs = first ? first.t - start : null;
+    f.picks = picks.length; f.hints = hints.length;
+    f.placedMine = snaps.length; f.placedPartner = snapsAll.length - snaps.length;
+    f.drops = drops.length; f.nearMisses = drops.filter(function (e) { return e.nearMiss; }).length;
     var perPiece = {}; drops.forEach(function (e) { perPiece[e.piece] = (perPiece[e.piece] || 0) + 1; });
-    var persev = Object.keys(perPiece).filter(function (k) { return perPiece[k] >= 2; }).length;
-    var coherent = 0; for (var i = 1; i < snaps.length; i++) { var a = game.pieces[snaps[i - 1].piece], b = game.pieces[snaps[i].piece]; if (Math.abs(a.col - b.col) + Math.abs(a.row - b.row) === 1) coherent++; }
-    var coherence = snaps.length > 1 ? coherent / (snaps.length - 1) : 0;
-    var own = log.filter(function (e) { return e.kind !== 'partnerPick' && e.kind !== 'partnerJoined' && mine(e); });
-    var lapses = 0, longest = 0; for (var j = 1; j < own.length; j++) { var gap = own[j].t - own[j - 1].t; if (gap > 8000) lapses++; if (gap > longest) longest = gap; }
-    var secs = function (ms) { return (ms / 1000).toFixed(1) + ' s'; };
+    f.perseveration = Object.keys(perPiece).filter(function (k) { return perPiece[k] >= 2; }).length;
+    // straightness per drag that moved
+    f.straightness = releases.filter(function (e) { return e.pathLen > 0; }).map(function (e) { return Math.min(1, e.straight / Math.max(e.pathLen, 1)); });
+    f.straightnessMean = f.straightness.length ? f.straightness.reduce(function (a, b) { return a + b; }, 0) / f.straightness.length : null;
+    // drag durations from paths
+    f.dragMs = releases.map(function (e) { return e.durationMs || 0; });
+    // seconds between placements (mine), and who placed
+    f.placements = snapsAll.map(function (e, i) { return { by: e.by === 'partner' ? 'partner' : 'me', gapMs: e.t - (i ? snapsAll[i - 1].t : start), piece: e.piece }; });
+    var gaps = f.placements.filter(function (x) { return x.by === 'me'; }).map(function (x) { return x.gapMs; });
+    f.placementMedianMs = gaps.length ? gaps.slice().sort(function (a, b) { return a - b; })[Math.floor(gaps.length / 2)] : null;
+    var mean = gaps.length ? gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length : 0;
+    f.placementCv = gaps.length > 1 ? Math.sqrt(gaps.reduce(function (a, b) { return a + (b - mean) * (b - mean); }, 0) / (gaps.length - 1)) / mean : null;
+    // search time: release to next pick
+    f.searchMs = []; for (var i = 0; i < log.length; i++) if (log[i].kind === 'release') { for (var j = i + 1; j < log.length; j++) { if (log[j].kind === 'pick') { f.searchMs.push(log[j].t - log[i].t); break; } if (log[j].kind === 'complete') break; } }
+    // order coherence over my placements
+    var coherent = 0; for (var k = 1; k < snaps.length; k++) { var a = game.pieces[snaps[k - 1].piece], b = game.pieces[snaps[k].piece]; if (Math.abs(a.col - b.col) + Math.abs(a.row - b.row) === 1) coherent++; }
+    f.orderCoherence = snaps.length > 1 ? coherent / (snaps.length - 1) : null;
+    // lapses: gaps over 8 s between my own touches
+    var own = log.filter(function (e) { return (e.kind === 'pick' || e.kind === 'release' || e.kind === 'start' || e.kind === 'hint') && mine(e); });
+    f.lapses = 0; f.longestGapMs = 0; for (var q = 1; q < own.length; q++) { var gap = own[q].t - own[q - 1].t; if (gap > 8000) f.lapses++; if (gap > f.longestGapMs) f.longestGapMs = gap; }
+    f.completed = !!complete;
+    return f;
+  }
+
+  // ---------- backend view: the statistics as they are collected ----------
+  var backend = {
+    open: false, pending: false, tick: null,
+    schedule: function () { if (!backend.open || backend.pending) return; backend.pending = true; requestAnimationFrame(function () { backend.pending = false; backend.render(); }); },
+    toggle: function (on) {
+      backend.open = on; $('backend').hidden = !on; $('backend-toggle').setAttribute('aria-pressed', on ? 'true' : 'false');
+      clearInterval(backend.tick);
+      if (on) { backend.render(); backend.tick = setInterval(function () { if (current === 'puzzle') backend.render(); }, 1000); }
+    },
+    render: function () {
+      var sec = function (ms) { return ms == null ? '–' : (ms / 1000).toFixed(1) + ' s'; };
+      var pct = function (x) { return x == null ? '–' : Math.round(x * 100) + '%'; };
+      if (!game) {
+        $('be-meta').textContent = 'No session yet. Start a puzzle and the statistics appear here as they are collected.';
+        $('be-tiles').innerHTML = ''; $('be-log').innerHTML = ''; $('be-payload').textContent = '{}'; $('be-observation').textContent = '{}';
+        chart($('be-chart-search'), [], null, 's'); chart($('be-chart-straight'), [], null, '%');
+        return;
+      }
+      var f = features();
+      $('be-meta').textContent = 'session ' + game.seed.toString(16).slice(0, 6) + ' · task jigsaw · mode ' + mode + ' · ' + f.count + ' pieces · ' + log.length + ' events · ' + sec(f.elapsedMs) + (f.completed ? ' · complete' : '');
+      var tiles = [
+        ['Time to first move', sec(f.timeToFirstMoveMs), 'initiation, arousal'],
+        ['Placed', f.placedMine + (mode === 'afar' ? ' + ' + f.placedPartner + ' by Anna' : ''), 'of ' + f.count],
+        ['Median gap between placements', sec(f.placementMedianMs), f.placementCv == null ? 'variability –' : 'variability (CV) ' + f.placementCv.toFixed(2)],
+        ['Loose drops', f.drops + (f.nearMisses ? ' (' + f.nearMisses + ' near board)' : ''), 'spatial judgement'],
+        ['Same piece dropped loose ≥ 2×', String(f.perseveration), 'perseveration'],
+        ['Order coherence', pct(f.orderCoherence), 'next to previous placement'],
+        ['Drag straightness', pct(f.straightnessMean), f.straightness.length + ' drags'],
+        ['Pauses over 8 s', f.lapses + (f.longestGapMs > 8000 ? ' (longest ' + sec(f.longestGapMs) + ')' : ''), 'attention lapses'],
+        ['Pick-ups', String(f.picks), 'for ' + f.count + ' pieces'],
+        ['Hints', String(f.hints), 'cueing']
+      ];
+      $('be-tiles').innerHTML = tiles.map(function (r) { return '<div class="tile"><div class="tile__k">' + r[0] + '</div><div class="tile__v">' + r[1] + '</div><div class="tile__d">' + r[2] + '</div></div>'; }).join('');
+      chart($('be-chart-search'), f.placements.map(function (x) { return { v: x.gapMs / 1000, partner: x.by === 'partner', label: 'piece ' + x.piece + (x.by === 'partner' ? ' (Anna)' : '') }; }), f.placementMedianMs == null ? null : f.placementMedianMs / 1000, 's');
+      chart($('be-chart-straight'), f.straightness.map(function (v, i) { return { v: v * 100, label: 'drag ' + (i + 1) }; }), null, '%', 100);
+      var lines = log.slice(-60).reverse().map(function (e) {
+        var extra = Object.keys(e).filter(function (k) { return k !== 't' && k !== 'kind'; }).map(function (k) { return k + '=' + e[k]; }).join(' ');
+        return '<li' + (e.by === 'partner' || /^partner/.test(e.kind) ? ' class="partner"' : '') + '><span class="t">+' + ((e.t - log[0].t) / 1000).toFixed(1) + 's</span>' + e.kind + ' ' + extra + '</li>';
+      });
+      $('be-log').innerHTML = lines.join('');
+      var last = log[log.length - 1];
+      $('be-payload').textContent = JSON.stringify({ id: 'evt_' + log.length.toString(36), sessionId: 'ses_' + game.seed.toString(36), task: 'jigsaw', kind: 'jigsaw.' + last.kind, t: last.t - log[0].t, payload: (function () { var o = {}; for (var k in last) if (k !== 't' && k !== 'kind') o[k] = last[k]; return o; })() }, null, 1);
+      $('be-observation').textContent = JSON.stringify({ task: 'jigsaw', day: new Date().toISOString().slice(0, 10), mode: mode, pieces: f.count, methodVersion: 1, features: {
+        timeToFirstMoveMs: f.timeToFirstMoveMs, totalMs: f.elapsedMs, placedMine: f.placedMine, placedPartner: f.placedPartner, placementMedianMs: f.placementMedianMs,
+        placementCv: f.placementCv == null ? null : +f.placementCv.toFixed(3), searchMeanMs: f.searchMs.length ? Math.round(f.searchMs.reduce(function (a, b) { return a + b; }, 0) / f.searchMs.length) : null,
+        looseDrops: f.drops, nearMisses: f.nearMisses, perseveration: f.perseveration, orderCoherence: f.orderCoherence == null ? null : +f.orderCoherence.toFixed(2),
+        straightnessMean: f.straightnessMean == null ? null : +f.straightnessMean.toFixed(3), lapses: f.lapses, longestGapMs: f.longestGapMs, hints: f.hints, completed: f.completed,
+        baselineEligible: mode === 'solo' ? true : mode === 'afar' ? 'motor only' : false } }, null, 1);
+    }
+  };
+  // Thin single-hue bars anchored to the baseline, a dashed median, native tooltips per bar.
+  function chart(host, data, median, unit, fixedMax) {
+    var W = 360, H = 120, padL = 28, padR = 6, padT = 8, padB = 18;
+    var max = fixedMax || Math.max(1, Math.max.apply(null, data.map(function (d) { return d.v; }).concat([median || 0])) * 1.15);
+    var y = function (v) { return padT + (1 - v / max) * (H - padT - padB); };
+    var n = Math.max(data.length, 8), slot = (W - padL - padR) / n, bw = Math.max(3, Math.min(slot - 2, 18));
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + (unit === '%' ? 'straightness per drag' : 'seconds between placements') + '">';
+    var ticks = unit === '%' ? [0, 50, 100] : [0, Math.round(max / 2 * 10) / 10, Math.round(max * 10) / 10];
+    ticks.forEach(function (tv) { s += '<line class="' + (tv === 0 ? 'base' : 'grid') + '" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(tv).toFixed(1) + '" y2="' + y(tv).toFixed(1) + '"/><text class="tick" x="' + (padL - 4) + '" y="' + (y(tv) + 3.5).toFixed(1) + '" text-anchor="end">' + tv + (unit === '%' ? '%' : 's') + '</text>'; });
+    if (!data.length) s += '<text class="empty" x="' + (padL + 8) + '" y="' + (H / 2) + '">Nothing yet</text>';
+    data.forEach(function (d, i) {
+      var x = padL + i * slot + (slot - bw) / 2, top = y(Math.min(d.v, max)), h = Math.max(1, y(0) - top);
+      s += '<rect class="bar' + (d.partner ? ' bar--partner' : '') + '" x="' + x.toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + bw + '" height="' + h.toFixed(1) + '" rx="2"><title>' + d.label + ': ' + (unit === '%' ? Math.round(d.v) + '%' : d.v.toFixed(1) + ' s') + '</title></rect>';
+    });
+    if (median != null) s += '<line class="median" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(median).toFixed(1) + '" y2="' + y(median).toFixed(1) + '"><title>median ' + median.toFixed(1) + ' s</title></line>';
+    s += '</svg>';
+    host.innerHTML = s + (median != null ? '<p class="chart__sub">Dashed line: median of Margaret\'s placements' + (data.some(function (d) { return d.partner; }) ? '. Light bars: Anna' : '') + '</p>' : '');
+  }
+
+  function renderMetrics() {
+    var f = features();
+    var secs = function (ms) { return ms == null ? '–' : (ms / 1000).toFixed(1) + ' s'; };
     var played = mode === 'solo' ? 'On my own' : mode === 'shared' ? 'Together on one screen. Two people\'s moves cannot be told apart, so this session is engagement, not baseline' : 'Together with ' + PARTNER + ' from afar (mocked). Only Margaret\'s own moves are counted; search time is shared work, motor measures still hold';
     var rows = [
       ['Played', played],
-      ['Time to first move', game.firstMoveAt ? secs(game.firstMoveAt - game.startedAt) : 'no move'],
-      ['Total time', secs(game.completedAt - game.startedAt)],
-      ['Pieces picked up', picks + ' (of ' + game.pieces.length + ')'],
-      ['Placed by Margaret', snaps.length + (mode === 'afar' ? ' (' + PARTNER + ' placed ' + game.partnerPlaced() + ')' : '')],
-      ['Drops that did not click in', drops.length + (drops.filter(function (e) { return e.nearMiss; }).length ? ' (' + drops.filter(function (e) { return e.nearMiss; }).length + ' near the board)' : '')],
-      ['Same piece dropped loose twice or more', String(persev)],
-      ['Order coherence', snaps.length > 1 ? Math.round(coherence * 100) + '% of clicks next to the previous one' : 'not enough placements'],
-      ['Drag straightness', releases.length ? Math.round(straightness * 100) + '% (100% is a straight line)' : 'no drags'],
-      ['Pauses over 8 s', lapses + (longest > 8000 ? ' (longest ' + secs(longest) + ')' : '')]
+      ['Time to first move', secs(f.timeToFirstMoveMs)],
+      ['Total time', secs(f.elapsedMs)],
+      ['Pieces picked up', f.picks + ' (of ' + f.count + ')'],
+      ['Placed by Margaret', f.placedMine + (mode === 'afar' ? ' (' + PARTNER + ' placed ' + f.placedPartner + ')' : '')],
+      ['Drops that did not click in', f.drops + (f.nearMisses ? ' (' + f.nearMisses + ' near the board)' : '')],
+      ['Same piece dropped loose twice or more', String(f.perseveration)],
+      ['Order coherence', f.orderCoherence == null ? 'not enough placements' : Math.round(f.orderCoherence * 100) + '% of clicks next to the previous one'],
+      ['Drag straightness', f.straightnessMean == null ? 'no drags' : Math.round(f.straightnessMean * 100) + '% (100% is a straight line)'],
+      ['Pauses over 8 s', f.lapses + (f.longestGapMs > 8000 ? ' (longest ' + secs(f.longestGapMs) + ')' : '')]
     ];
     var t = $('metrics'); t.innerHTML = '';
     rows.forEach(function (r) { var tr = document.createElement('tr'); var th = document.createElement('th'); th.textContent = r[0]; var td = document.createElement('td'); td.className = r[0] === 'Played' ? '' : 'num'; td.textContent = r[1]; tr.appendChild(th); tr.appendChild(td); t.appendChild(tr); });
@@ -613,7 +786,7 @@
     game = buildGame(pieceCount, seed, restore ? restore.clusters : null);
     show('puzzle');
   }
-  function goHome() { if (game) game.stop(); game = null; mode = 'solo'; pickOption($('mode-options'), 'data-mode', 'solo'); show('invite'); }
+  function goHome() { if (game) game.stop(); game = null; log = []; mode = 'solo'; pickOption($('mode-options'), 'data-mode', 'solo'); show('invite'); backend.schedule(); }
 
   $('mode-options').addEventListener('click', function (ev) {
     var b = ev.target.closest('button[role=radio]'); if (!b) return;
@@ -629,6 +802,8 @@
   footer.carryOn.addEventListener('click', goHome);
   $('back').addEventListener('click', function () { if (current === 'pieces') show('invite'); else goHome(); });
   $('home').addEventListener('click', goHome);
+  $('backend-toggle').addEventListener('click', function () { backend.toggle(!backend.open); });
+  if (window.innerWidth > 900) backend.toggle(true);
 
   // Keep a half-finished puzzle across a page update.
   function boot(data) {

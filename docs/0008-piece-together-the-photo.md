@@ -123,7 +123,7 @@ it goes forward.
 | Puzzle | assemble | drag a piece | untouched; piece lifted (blue outline, shadow); dropped loose; clicked into board; clicked onto a neighbour; hint shown; complete; shared: two pieces lifted; afar: "Waiting for Anna" then "Anna is here", Anna carrying a piece with her name tag |
 | Thank you | close | Carry on | completed alone ("You did it!"); together ("You did it together! Anna put in 4 of them."); stopped early ("We'll keep your pieces for tomorrow") |
 
-Mockups: [touch prototype](https://claude.ai/code/artifact/6cd7aafe-d024-47d2-b98c-9bbb43c65609) (open on a phone; source `docs/assets/0008/jigsaw-prototype.html`, a single page with no build step) and the earlier static [design canvas](https://claude.ai/code/artifact/af136106-64b8-4f09-9c01-c72566a96102) with square tiles, kept for the screen layout.
+Mockups: [touch prototype](https://claude.ai/code/artifact/6cd7aafe-d024-47d2-b98c-9bbb43c65609) (open on a phone; source `docs/assets/0008/jigsaw-prototype.html`, a single page with no build step; the "Backend view" button in the demo strip shows the statistics as they are collected, docked beside the puzzle on wide screens) and the earlier static [design canvas](https://claude.ai/code/artifact/af136106-64b8-4f09-9c01-c72566a96102) with square tiles, kept for the screen layout.
 
 ### 5.3 Copy and tone
 
@@ -214,6 +214,17 @@ person's baseline with the robust z method from 0002:
 personal baseline from 0002, plus the rolling seven-day standard deviation,
 at a fixed piece count. Session opened or not, and when, comes from 0007.
 
+**Backend view in the prototype.** A demo-only panel (never part of the
+person's screen) recomputes the per-session statistics from the event log
+on every event: tiles for initiation, placements (own and Anna's), median
+and variability of the gap between placements, loose drops, perseveration,
+order coherence, straightness and lapses; a bar chart of seconds between
+placements with the person's median; a bar chart of straightness per drag;
+the raw event stream; the last event in the shape 0007's `POST /api/events`
+takes; and the observation record the server would derive, including a
+`baselineEligible` flag (true alone, "motor only" from afar, false on a
+shared screen).
+
 **What the together modes do to the signal.** Together on one screen, two
 people's fingers cannot be told apart, so the session counts as engagement
 (like 0003) and never enters the baseline. Together from afar, each phone
@@ -286,6 +297,7 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-13 | Backend view added to the prototype: live statistics, event stream, event and observation payloads | Owner asked to see the statistics being collected |
 | 2026-09-13 | From-afar partner mocked on the same phone; live two-phone sync and the "Who are you?" screen removed from the sketch | Owner: just mock Anna's interactions |
 | 2026-09-13 | Together modes added: two fingers on one screen, and a shared live board from afar; prototype updated; signal rules for together sessions written into 6.1 | Owner asked for a way to play with a grandchild or a friend in the same home |
 | 2026-09-13 | Statistics written out per drag, per piece, per session, across days; event list updated | Owner asked what the drag mechanic lets us collect |
