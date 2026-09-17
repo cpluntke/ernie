@@ -217,14 +217,18 @@ textarea.say {
   line-height: 1.5; color: var(--ernie-ink); background: var(--ernie-paper);
   border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); resize: vertical;
 }
-.pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--ernie-space-2); margin: 0 0 var(--ernie-space-2); }
+/* minmax(0,1fr), not 1fr: a plain 1fr column will not shrink below its content,
+   so the word keys stole the width and left "1" and "3" at 35px. Three columns
+   at every size, because that is the order a telephone taught her. */
+.pad-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 0 0 var(--ernie-space-2); }
 .pad-keys button {
-  min-height: var(--ernie-target); font-size: var(--ernie-heading-2); font-weight: 700; white-space: nowrap;
+  min-height: var(--ernie-target); font-size: var(--ernie-heading-2); font-weight: 700;
+  padding-inline: 0.25rem;
   color: var(--ernie-ink); background: var(--ernie-paper); border: 3px solid var(--ernie-border);
   border-radius: var(--ernie-radius); cursor: pointer;
 }
 .readout {
-  font-size: var(--ernie-heading); font-weight: 700; text-align: center; padding: var(--ernie-space-2);
+  font-size: var(--ernie-heading-2); font-weight: 700; text-align: center; padding: var(--ernie-space-1);
   border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius);
   background: var(--ernie-surface); margin: 0 0 var(--ernie-space-2); font-variant-numeric: tabular-nums;
 }
@@ -269,9 +273,9 @@ textarea.say {
   .actions { padding: var(--ernie-space-1); }
   .actions__inner { gap: var(--ernie-space-1); }
   .btn { padding-block: var(--ernie-space-1); }
-  .pad-keys { grid-template-columns: repeat(4, 1fr); gap: var(--ernie-space-1); }
+  .pad-keys { gap: var(--ernie-space-1); margin-bottom: var(--ernie-space-1); }
   .pad-keys button { min-height: 3rem; font-size: var(--ernie-text-lg); }
-  .readout { font-size: var(--ernie-heading-2); padding: var(--ernie-space-1); margin-bottom: var(--ernie-space-1); }
+  .readout { font-size: var(--ernie-text-lg); margin-bottom: var(--ernie-space-1); }
   .demo-strip { display: none; }          /* demo chrome, not the app */
   h1 { font-size: var(--ernie-heading-2); margin-bottom: var(--ernie-space-1); }
   .body { padding-block: var(--ernie-space-1); }
@@ -305,6 +309,12 @@ textarea.say {
    progress is the one worth losing. */
 @media (max-height: 560px) {
   .steps { display: none; }
+}
+/* A window this short cannot hold a question, a readout and four rows of keys.
+   Two rows of six keeps every key on the screen and over the floor; the
+   telephone order goes, but a key she cannot see is worse than an odd order. */
+@media (max-height: 480px) {
+  .pad-keys { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 @media (max-width: 360px) {
   .answers--many .answer { padding-inline: var(--ernie-space-1); }
