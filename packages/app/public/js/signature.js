@@ -327,11 +327,13 @@ export function runSignature(ui, ctx) {
       el('div', { class: 'notice notice--success', role: 'status',
         html: '<span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div>' }, body);
       const page = el('div', { class: 'page' }, body);
-      page.innerHTML = `<svg viewBox="0 0 400 200" role="img" aria-label="Your signature">`
+      // Date first: on a short screen the signature is what gets cut, and a
+      // half-sliced line of text reads as a broken screen rather than a long one.
+      page.innerHTML = `<p class="page__date">${esc(fmtDate(new Date()))}</p>`
+        + `<svg viewBox="0 0 400 200" role="img" aria-label="Your signature">`
         + `<line x1="30" y1="150" x2="370" y2="150" stroke="#4b5563" stroke-width="2"/>`
         + `<text x="12" y="156" font-size="20" fill="#374151">×</text>`
-        + sigPaths(rec.strokes, 400) + `</svg>`
-        + `<p class="page__date">${esc(fmtDate(new Date()))}</p>`;
+        + sigPaths(rec.strokes, 400) + `</svg>`;
       ui.body(body);
       ui.actions([{ label: 'Carry on', kind: 'huge', onClick: () => resolve(rec) }]);
     }

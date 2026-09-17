@@ -52,7 +52,10 @@ const ui = {
   // question at the top instead: question and answers stay on screen together.
   scrollToAsk() {
     const w = $('body-wrap');
-    const ask = w.querySelector('.ask:last-of-type') || w.querySelector('.ask');
+    // The last .ask, not :last-of-type — that matches the last <p> in its
+    // parent, which is the helper line, so the scroll landed on question one.
+    const asks = w.querySelectorAll('.ask');
+    const ask = asks[asks.length - 1];
     w.scrollTop = ask ? Math.max(0, ask.offsetTop - w.offsetTop - 8) : w.scrollHeight;
   },
   steps(index) {
@@ -162,7 +165,7 @@ async function visitFlow() {
   // 3. a puzzle
   const played = await new Promise((resolve) => {
     say('Would you like to do a puzzle before you go?', [
-      { text: 'A picture in twelve pieces. There is no hurry, and you can stop at any time.', large: true }
+      { text: 'A picture in a few big pieces. There is no hurry, and you can stop at any time.', large: true }
     ], [
       { label: 'Not today, thank you', kind: 'secondary', onClick: () => { events.push('jigsaw', 'declined', {}); resolve(null); } },
       { label: 'Ask Anna to join me', kind: 'secondary', onClick: () => resolve({ withPartner: true }) },

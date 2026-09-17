@@ -120,9 +120,11 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .btn--secondary { background: var(--ernie-paper); color: var(--ernie-primary); }
 .btn--huge { font-size: var(--ernie-heading); min-height: 5rem; padding: var(--ernie-space-3) var(--ernie-space-4); }
 .btn--full { display: flex; width: 100%; }
+/* Greyed, but still a button: with no border at all the secondary next to it
+   reads as the only control on the screen. */
 .btn:disabled {
-  background: transparent; border-color: transparent; color: var(--ernie-ink-soft);
-  cursor: default; opacity: 0.6;
+  background: var(--ernie-surface); border-color: #9ca3af; color: var(--ernie-ink-soft);
+  cursor: default;
 }
 .btn__icon { font-size: 1.25em; line-height: 1; }
 
@@ -137,9 +139,11 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .choice { border: 0; padding: 0; margin: 0 0 var(--ernie-space-2); }
 .choice__legend { font-weight: 700; padding: 0; margin-bottom: var(--ernie-space-2); }
 .answers { display: grid; gap: var(--ernie-space-2); grid-template-columns: 1fr; margin: 0; }
-.answers--two { grid-template-columns: 1fr 1fr; }
+.answers--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.answers--many { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.answers--many .answer { padding-block: var(--ernie-space-1); }
 .answer {
-  display: flex; align-items: center; justify-content: center; min-height: var(--ernie-target);
+  display: flex; align-items: center; justify-content: center; min-height: var(--ernie-target); min-width: 0;
   padding: var(--ernie-space-2); font-size: var(--ernie-text-lg); font-weight: 700;
   color: var(--ernie-ink); background: var(--ernie-paper); border: 3px solid var(--ernie-border);
   border-radius: var(--ernie-radius); cursor: pointer; text-align: center;
@@ -175,8 +179,8 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .pad-x { position: absolute; left: 3%; bottom: 24%; font-size: 1.5rem; color: var(--ernie-ink-soft); pointer-events: none; }
 .pad-hint { position: absolute; left: 0; right: 0; top: 40%; text-align: center; color: var(--ernie-ink-soft); font-size: var(--ernie-text-lg); pointer-events: none; }
 .page { border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: #fffdf7; padding: var(--ernie-space-2); margin: 0 0 var(--ernie-space-3); }
-.page svg { display: block; width: 100%; height: auto; }
-.page__date { margin: var(--ernie-space-1) 0 0; font-weight: 700; }
+.page svg { display: block; width: 100%; height: auto; max-height: 30vh; }
+.page__date { margin: 0 0 var(--ernie-space-1); font-weight: 700; }
 
 /* ---------------------------------------------------------------- chat */
 .said { margin: 0 0 var(--ernie-space-2); }
@@ -185,6 +189,9 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .said--you .said__what { background: var(--ernie-selected); border-color: var(--ernie-primary); }
 .said--skipped .said__what { color: var(--ernie-ink-soft); }
 .ask { font-size: var(--ernie-text-lg); font-weight: 700; margin: var(--ernie-space-2) 0 var(--ernie-space-2); }
+@media (max-height: 700px) {
+  textarea.say { min-height: 3.5rem; max-height: 4.5rem; }
+}
 textarea.say {
   width: 100%; min-height: 6.5rem; padding: var(--ernie-space-2); font-size: var(--ernie-text-lg);
   line-height: 1.5; color: var(--ernie-ink); background: var(--ernie-paper);
@@ -243,7 +250,7 @@ textarea.say {
   .body { padding-block: var(--ernie-space-1); }
   .text { margin-bottom: var(--ernie-space-1); }
   .text--large { font-size: var(--ernie-text); }
-  .pad-wrap { min-height: 6rem; max-height: none; }
+  .pad-wrap { min-height: 5.75rem; max-height: none; }
   .topbar { padding: var(--ernie-space-1); }
   .topbar .btn { min-height: 2.75rem; }
   .actions { padding: var(--ernie-space-1); }
@@ -256,9 +263,13 @@ textarea.say {
      certain person needs. */
   .answers { gap: var(--ernie-space-1); }
   .answer { padding-block: var(--ernie-space-1); }
+  /* The question, the writing box and the line that says why the button is
+     grey all have to be on screen together in 200px of card. */
+  .ask { font-size: var(--ernie-text); margin-block: var(--ernie-space-1); }
+  textarea.say { min-height: 3rem; max-height: 3rem; }
 }
 @media (max-height: 660px) and (min-width: 480px) {
-  .answers { grid-template-columns: 1fr 1fr; }
+  .answers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* The one question the app ever asks over the top of a screen: saying no has

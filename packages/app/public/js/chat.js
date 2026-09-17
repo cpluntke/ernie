@@ -83,19 +83,27 @@ export function runChat(ui, ctx) {
     function composer(it, area) {
       const quick = it.kind === 'yesno' ? ['Yes', 'No'] : it.kind === 'choice' ? it.options : null;
       if (quick) {
-        const wrap = el('div', { class: 'answers' + (quick.length === 2 ? ' answers--two' : '') }, area);
+        // More than five options — the seven weekdays — go two-up. Stacked, the
+        // last one falls off the bottom, and on a Saturday that is the right
+        // answer to a scored question that cannot be seen.
+        const wrap = el('div', { class: 'answers'
+          + (quick.length === 2 ? ' answers--two' : quick.length > 5 ? ' answers--many' : '') }, area);
         for (const o of quick) el('button', { type: 'button', class: 'answer', text: o, onclick: () => { if (!busy) send(it, o, true); } }, wrap);
         el('p', { class: 'text text--soft', text: 'Or say it in your own words:' }, area);
       }
+      // The helper sits above the box on a short screen: below it, it is the
+      // thing that falls off, and it is the only reason the primary is grey.
+      const short = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;
+      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, short ? area : null);
       const ta = el('textarea', { class: 'say', id: 'say', 'aria-label': it.question }, area);
       if (it.kind === 'number') { ta.setAttribute('inputmode', 'decimal'); ta.style.minHeight = '5rem'; }
-      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, area);
+      if (!short) area.appendChild(hint);
       const T = trackTyping(ta);
       pending.typing = T;
       ui.actions([
         { label: 'Skip this one', kind: 'secondary', onClick: () => { if (!busy) finishItem(it, { skipped: true }); } },
         { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
-      ]);
+      ], { row: true });   // stacked, this footer is 80px the writing box needs
       ta.addEventListener('input', () => {
         ui.setDisabled('send', !ta.value.trim() || busy);
         hint.hidden = !!ta.value.trim();
@@ -146,7 +154,8 @@ export function runChat(ui, ctx) {
     function widgets(it, area) {
       if (it.kind === 'yesno' || it.kind === 'choice') {
         const opts = it.kind === 'yesno' ? ['Yes', 'No'] : it.options;
-        const wrap = el('div', { class: 'answers' + (it.kind === 'yesno' ? ' answers--two' : '') }, area);
+        const wrap = el('div', { class: 'answers'
+          + (it.kind === 'yesno' ? ' answers--two' : opts.length > 5 ? ' answers--many' : '') }, area);
         for (const o of opts) el('button', { type: 'button', class: 'answer', text: o, onclick: () => finishItem(it, { value: o, ratingSource: 'heuristic' }) }, wrap);
         ui.actions([]);
         return;
@@ -169,8 +178,10 @@ export function runChat(ui, ctx) {
         ui.actions([{ id: 'send', label: 'Done', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }]);
         return;
       }
+      const short2 = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;
+      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, short2 ? area : null);
       const ta = el('textarea', { class: 'say', id: 'say', 'aria-label': it.question }, area);
-      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, area);
+      if (!short2) area.appendChild(hint);
       pending.typing = trackTyping(ta);
       ui.actions([
         { label: 'Skip this one', kind: 'secondary', onClick: () => finishItem(it, { skipped: true }) },
@@ -179,7 +190,7 @@ export function runChat(ui, ctx) {
             finishItem(it, { said: v, value: v, score: it.id === 'd-back' ? scoreDaysBackwards(v) : null,
               rating: it.kind === 'text' && it.rated ? heuristicRating(v) : null, ratingSource: 'heuristic' });
           } }
-      ]);
+      ], { row: true });
       ta.addEventListener('input', () => {
         ui.setDisabled('send', !ta.value.trim());
         hint.hidden = !!ta.value.trim();

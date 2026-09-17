@@ -112,7 +112,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
     // How big a piece would actually be on this screen decides how many there
     // are. A window too short for twelve gets six large ones rather than twelve
     // nobody can hit — the puzzle is the point, the piece count is not.
-    const MIN_PIECE_PX = 48;
+    const MIN_PIECE_PX = 64;
     const fitted = (g) => {
       const bw = play.clientWidth || 320, bh = play.clientHeight || 320;
       return g.s * Math.min(bw / g.W, bh / g.H);
@@ -312,6 +312,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       if (swallowClick || finished || !chosen) return;
       const pt = svgPoint(ev);
       if (inPicture(pt.x, pt.y)) placeChosen();
+      else instruction.textContent = 'Tap inside the dotted square to put it in.';
     });
 
     function snap(cl, dragged) {
