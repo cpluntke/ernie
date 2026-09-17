@@ -31,6 +31,25 @@ widgets, so a first deploy never fails on a missing key.
 | `ANTHROPIC_API_KEY` | unset | enables reading chat replies |
 | `ERNIE_MODEL` | `claude-sonnet-5` | the model that reads replies |
 | `ERNIE_EFFORT` | `low` | effort level; the reads are short and tightly specified |
+| `ERNIE_PASSWORD` | `bert` | the shared password on the way in |
+
+## The password on the way in
+
+Everything but `GET /healthz` sits behind one shared password. It is a door,
+not a lock: it keeps the prototype off the open web while it is being
+reviewed, and it stops a passer-by spending the API key on `/api/interpret`.
+It is not protecting anything secret, and everyone who is meant to see it has
+the same password.
+
+It is checked on the server, not in the browser, because a password checked in
+the browser is written in the page for anyone who looks — and because a client
+check leaves the API route open anyway. A correct password sets an `HttpOnly`,
+`SameSite=Lax` cookie holding a hash of it, for a week; the comparison is
+constant time and shares the per-address rate limit with `/api/interpret`, so
+it cannot be guessed a character at a time or hammered.
+
+Change it by setting `ERNIE_PASSWORD` on the service. Everyone's cookie stops
+working when you do, which is how you revoke it.
 
 ## Deploying on Render
 
@@ -51,8 +70,9 @@ Two things the build needs, both of which have already caught us out:
 
 | Route | What it is |
 |---|---|
-| `GET /` | the app |
-| `GET /healthz` | liveness |
+| `GET /` | the app, or the password page when not signed in |
+| `GET /healthz` | liveness — the one route outside the password |
+| `POST /api/login` | `password=…` → the cookie |
 | `GET /api/config` | whether a reader is configured, and which model |
 | `POST /api/interpret` | `{question, spec, reply}` → the structured reading |
 

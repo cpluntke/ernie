@@ -3,6 +3,7 @@
 // yet: the visit's records live in the browser until 0007's store exists.
 
 import http from 'node:http';
+import crypto from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -13,6 +14,62 @@ const PUBLIC = path.join(HERE, 'public');
 const PORT = Number(process.env.PORT) || 10000;
 const MODEL = process.env.ERNIE_MODEL || 'claude-sonnet-5';
 const EFFORT = process.env.ERNIE_EFFORT || 'low';
+
+// A door, not a lock. It keeps the prototype off the open web while it is being
+// reviewed, and stops a passer-by spending the API key; it is not protecting
+// anything secret, and everyone who is meant to see it shares one password.
+// Done on the server because a password checked in the browser is written in
+// the page for anyone who looks.
+const PASSWORD = process.env.ERNIE_PASSWORD || 'bert';
+const COOKIE = 'ernie_gate';
+const TOKEN = crypto.createHash('sha256').update(`${PASSWORD}|ernie gate v1`).digest('hex').slice(0, 32);
+
+function signedIn(req) {
+  return (req.headers.cookie || '').split(';').some((c) => c.trim() === `${COOKIE}=${TOKEN}`);
+}
+// Constant time, so the password cannot be guessed a character at a time.
+function passwordOk(given) {
+  const a = Buffer.from(crypto.createHash('sha256').update(String(given)).digest('hex'));
+  const b = Buffer.from(crypto.createHash('sha256').update(PASSWORD).digest('hex'));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function loginPage({ wrong = false } = {}) {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ernie</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+<style>
+  :root { --ink:#111827; --soft:#374151; --line:#4b5563; --primary:#1e40af; --warn:#7c2d12; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:1.5rem; background:#e5e7eb; color:var(--ink); font-size:1.25rem; line-height:1.5;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
+  form { width:100%; max-width:24rem; background:#fff; border:1px solid #9ca3af; border-radius:1.25rem;
+    padding:1.5rem; box-shadow:0 12px 34px rgba(17,24,39,.22); }
+  h1 { font-size:1.5rem; margin:0 0 .5rem; }
+  p { margin:0 0 1rem; color:var(--soft); }
+  label { display:block; font-weight:700; margin-bottom:.5rem; }
+  input { width:100%; min-height:3.5rem; padding:.75rem 1rem; font:inherit; color:var(--ink);
+    border:3px solid var(--line); border-radius:.75rem; }
+  button { width:100%; min-height:3.5rem; margin-top:1rem; padding:.75rem 1rem; font:inherit; font-weight:700;
+    color:#fff; background:var(--primary); border:3px solid var(--primary); border-radius:.75rem; cursor:pointer; }
+  .wrong { color:var(--warn); font-weight:700; }
+  :focus-visible { outline:4px solid var(--ink); outline-offset:3px; }
+</style></head>
+<body>
+  <form method="post" action="/api/login">
+    <h1>ernie</h1>
+    <p>A prototype. Please enter the password you were given.</p>
+    ${wrong ? '<p class="wrong" role="alert">That password did not match. Please try again.</p>' : ''}
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" autofocus required>
+    <button type="submit">Go in</button>
+  </form>
+</body></html>`;
+}
 
 // The SDK is optional at runtime: without a key the site still serves and the
 // chat falls back to its tap-only widgets, so a first deploy never fails on it.
@@ -133,6 +190,39 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/healthz') return json(res, 200, { ok: true });
 
+  // ---- the door
+  const addr = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
+  const https = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim() === 'https';
+
+  if (url.pathname === '/api/login') {
+    if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
+    if (!allow(addr)) {                       // the same bucket that guards the key
+      res.writeHead(429, { 'content-type': 'text/plain; charset=utf-8' });
+      return res.end('Too many tries. Please wait a minute.');
+    }
+    let given = '';
+    try {
+      const body = await readBody(req, 4096);
+      given = new URLSearchParams(body).get('password') || '';
+    } catch { /* an empty password fails the check below anyway */ }
+    if (!passwordOk(given)) {
+      res.writeHead(401, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(loginPage({ wrong: true }));
+    }
+    res.writeHead(303, {
+      location: '/',
+      'set-cookie': `${COOKIE}=${TOKEN}; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax${https ? '; Secure' : ''}`,
+      'cache-control': 'no-store'
+    });
+    return res.end();
+  }
+
+  if (!signedIn(req)) {
+    if (url.pathname.startsWith('/api/')) return json(res, 401, { error: 'not signed in' });
+    res.writeHead(url.pathname === '/' ? 200 : 403, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+    return res.end(req.method === 'HEAD' ? undefined : loginPage());
+  }
+
   if (url.pathname === '/api/config') {
     return json(res, 200, {
       interpret: !!client,
@@ -143,7 +233,6 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/api/interpret') {
     if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
     if (!client) return json(res, 503, { error: 'no reader configured' });
-    const addr = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
     if (!allow(addr)) return json(res, 429, { error: 'slow down' });
     let payload;
     try {
