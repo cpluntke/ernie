@@ -63,6 +63,8 @@ await page.waitForSelector('text=may I ask you a few things');
 await shot('04-chat-invite');
 await btn('Yes, go ahead').click();
 await page.waitForSelector('.ask');
+await page.evaluate(() => { document.getElementById('body-wrap').scrollTop = 0; });
+await page.waitForTimeout(200);
 await shot('05-chat-question');
 // answer through the items (tap-only widgets)
 for (let i = 0; i < 8; i++) {
@@ -96,6 +98,13 @@ if (open) await page.locator('#backend-toggle').click();
 await page.waitForTimeout(500);
 await page.screenshot({ path: OUT + '09-backend.png' });
 const sentence = await page.locator('.sentence').first().textContent().catch(() => null);
+await page.locator('.sentence').first().screenshot({ path: OUT + '11-sentence.png' });
+await page.locator('table.z').first().screenshot({ path: OUT + '12-ztable.png' });
+await page.locator('.strip').first().screenshot({ path: OUT + '13-strip.png' });
+const items = page.locator('.strip__item');
+const n = await items.count();
+await items.nth(0).screenshot({ path: OUT + '14-sig-baseline.png' });
+await items.nth(n - 1).screenshot({ path: OUT + '15-sig-today.png' });
 await page.locator('#backend').screenshot({ path: OUT + '10-backend-panel.png' });
 console.log('sentence:', sentence);
 await b.close();
