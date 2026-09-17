@@ -22,19 +22,60 @@ const actionsEl = $('actions-inner');
 const buttons = new Map();
 
 const ui = {
-  title(text) { titleEl.textContent = text; titleEl.hidden = !text; },
-  body(node) { bodyEl.innerHTML = ''; if (node) bodyEl.appendChild(node); },
+  title(text, opts = {}) {
+    titleEl.textContent = text;
+    titleEl.hidden = !text;
+    titleEl.className = opts.hidden ? 'visually-hidden' : opts.compact ? 'title--compact' : '';
+    if (opts.hidden) titleEl.hidden = false;   // still there for a screen reader
+  },
+  // The top bar is the way out of every screen. An activity can relabel it so
+  // leaving does not need a second button eating the height.
+  topbarAction(a) {
+    const b = $('restart');
+    b.firstElementChild.textContent = a ? '\u2715' : '\u2302';
+    b.lastElementChild.textContent = a ? a.label : 'Start again';
+    b.onclick = a ? a.onClick : () => confirmRestart();
+    ui.topbarNote(null);
+  },
+  // Progress lives in the bar's empty half rather than in a line of its own:
+  // on a short screen that line is the difference between a 51px and a 64px piece.
+  topbarNote(text) {
+    const s = $('topbar-note');
+    s.textContent = text || '';
+    s.className = 'topbar__spacer' + (text ? ' topbar__spacer--note' : '');
+  },
+  // Every screen starts at its own top. Without this a screen inherits the
+  // last one's scroll offset and can open below its own heading — the puzzle
+  // offer arrived showing three buttons and no question.
+  body(node) { bodyEl.innerHTML = ''; if (node) bodyEl.appendChild(node); $('body-wrap').scrollTop = 0; },
   fixed(on) { $('body-wrap').classList.toggle('body--fixed', !!on); },
   scrollEnd() { const w = $('body-wrap'); w.scrollTop = w.scrollHeight; },
+  // Scrolling to the bottom of a transcript pushes the question itself off the
+  // top, and then the answer buttons are for a question nobody can see. Put the
+  // question at the top instead: question and answers stay on screen together.
+  scrollToAsk() {
+    const w = $('body-wrap');
+    // The last .ask, not :last-of-type — that matches the last <p> in its
+    // parent, which is the helper line, so the scroll landed on question one.
+    const asks = w.querySelectorAll('.ask');
+    const ask = asks[asks.length - 1];
+    w.scrollTop = ask ? Math.max(0, ask.offsetTop - w.offsetTop - 8) : w.scrollHeight;
+  },
   steps(index) {
     if (index == null) { stepsEl.hidden = true; return; }
     stepsEl.hidden = false;
+    // Too short to show the step line at all: the top bar's empty half carries
+    // it instead, which costs no height.
+    if (window.matchMedia && window.matchMedia('(max-height: 560px)').matches) {
+      ui.topbarNote(`Step ${index + 1} of ${STEPS.length}`);
+    }
     stepsEl.innerHTML = `<p class="steps__label">Step ${index + 1} of ${STEPS.length}: ${esc(STEPS[index])}</p>`
       + `<div class="steps__track" aria-hidden="true">${STEPS.map((s, i) => `<span class="steps__seg${i <= index ? ' steps__seg--done' : ''}"></span>`).join('')}</div>`;
   },
   actions(list, opts = {}) {
     actionsEl.innerHTML = '';
-    actionsEl.style.flexDirection = opts.row ? 'row' : 'column';
+    actionsEl.parentElement.hidden = !list.length;
+    actionsEl.className = 'actions__inner' + (opts.row ? ' actions__inner--row' : '');
     buttons.clear();
     for (const a of list) {
       const b = el('button', {
@@ -47,17 +88,51 @@ const ui = {
       if (a.id) buttons.set(a.id, b);
     }
   },
-  setDisabled(id, on) { const b = buttons.get(id); if (b) b.disabled = !!on; }
+  setDisabled(id, on) { const b = buttons.get(id); if (b) b.disabled = !!on; },
+  // The only question the app asks over the top of a screen. It never replaces
+  // the screen, because saying no has to put them back exactly where they were
+  // and none of the flows can be rewound.
+  confirm({ title, body, no = 'No, go back', yes, onYes }) {
+    if (document.getElementById('confirm')) return;
+    const close = () => { const d = document.getElementById('confirm'); if (d) d.remove(); };
+    const sheet = el('div', { class: 'confirm__sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'confirm-title' });
+    el('h2', { id: 'confirm-title', class: 'confirm__title', text: title }, sheet);
+    el('p', { class: 'text text--large', text: body }, sheet);
+    const row = el('div', { class: 'confirm__actions' }, sheet);
+    const cancel = el('button', { type: 'button', class: 'btn btn--secondary btn--full', text: no, onclick: close }, row);
+    el('button', { type: 'button', class: 'btn btn--full', text: yes, onclick: () => { close(); onYes(); } }, row);
+    const back = el('div', { id: 'confirm', class: 'confirm', onclick: (ev) => { if (ev.target.id === 'confirm') close(); } });
+    back.appendChild(sheet);
+    back.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') close(); });
+    document.querySelector('.app').appendChild(back);
+    cancel.focus();
+  }
 };
 
 function say(title, paragraphs, actions, stepIndex) {
   ui.fixed(false);
+  ui.topbarAction(null);
   ui.steps(stepIndex);
   ui.title(title);
   const body = el('div');
   for (const p of paragraphs) el('p', { class: 'text' + (p.large ? ' text--large' : '') + (p.soft ? ' text--soft' : ''), text: p.text }, body);
   ui.body(body);
   ui.actions(actions);
+}
+
+// Starting over destroys the signature and every answer given today, and the
+// button sits where a hesitant person taps first, so it asks before it does it.
+function confirmRestart() {
+  // Not "has the visit finished a step" but "has she done anything at all":
+  // the likeliest accidental tap is mid-signature, before any step resolves.
+  const doneSomething = events.list.some((e) => !(e.activity === 'visit' && e.kind === 'started')
+    && !(e.activity === 'signature' && e.kind === 'shown'));
+  if (!doneSomething) return visitFlow();
+  ui.confirm({
+    title: 'Start the whole visit over?',
+    body: 'Your signature and your answers today will be thrown away.',
+    no: 'No, stay here', yes: 'Yes, start over', onYes: () => visitFlow()
+  });
 }
 
 // --------------------------------------------------------------- the visit
@@ -98,7 +173,7 @@ async function visitFlow() {
   // 3. a puzzle
   const played = await new Promise((resolve) => {
     say('Would you like to do a puzzle before you go?', [
-      { text: 'A picture in twelve pieces. There is no hurry, and you can stop at any time.', large: true }
+      { text: 'A picture in a few big pieces. You can stop at any time.', large: true }
     ], [
       { label: 'Not today, thank you', kind: 'secondary', onClick: () => { events.push('jigsaw', 'declined', {}); resolve(null); } },
       { label: 'Ask Anna to join me', kind: 'secondary', onClick: () => resolve({ withPartner: true }) },
@@ -125,6 +200,7 @@ function farewell() {
     puzzle: visit.jigsaw ? (visit.jigsaw.abandoned ? 'left' : 'finished') : 'skipped'
   });
   ui.fixed(false);
+  ui.topbarAction(null);        // the puzzle's "Stop the puzzle" does not outlive it
   ui.steps(3);
   ui.title(`Goodbye, ${PERSON}.`);
   const body = el('div');
@@ -139,7 +215,7 @@ function farewell() {
       : 'You finished the picture on your own.' }, body);
   }
   ui.body(body);
-  ui.actions([{ label: 'Start again', kind: 'secondary', onClick: () => visitFlow() }]);
+  ui.actions([]);        // "Start again" lives in the top bar, where it always is
   backend.schedule();
 }
 
@@ -149,7 +225,7 @@ function cleanup() {
 
 // ------------------------------------------------------------------- boot
 const backend = mountBackend(visit);
-$('restart').addEventListener('click', () => visitFlow());
+ui.topbarAction(null);
 
 say('Just a moment…', [{ text: 'Getting ready.', soft: true }], [], null);
 modelClient().then((m) => {

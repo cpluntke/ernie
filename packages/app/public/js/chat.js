@@ -76,26 +76,38 @@ export function runChat(ui, ctx) {
       const area = el('div', { id: 'answer-area' }, body);
       ui.body(body);
       if (ctx.model) composer(it, area); else widgets(it, area);
-      ui.scrollEnd();
+      ui.scrollToAsk();
     }
 
     // --- conversational: own words, with quick answers as a shortcut
     function composer(it, area) {
       const quick = it.kind === 'yesno' ? ['Yes', 'No'] : it.kind === 'choice' ? it.options : null;
       if (quick) {
-        const wrap = el('div', { class: 'answers' + (quick.length === 2 ? ' answers--two' : '') }, area);
+        // More than five options — the seven weekdays — go two-up. Stacked, the
+        // last one falls off the bottom, and on a Saturday that is the right
+        // answer to a scored question that cannot be seen.
+        const wrap = el('div', { class: 'answers'
+          + (quick.length === 2 ? ' answers--two' : quick.length > 5 ? ' answers--many' : '') }, area);
         for (const o of quick) el('button', { type: 'button', class: 'answer', text: o, onclick: () => { if (!busy) send(it, o, true); } }, wrap);
         el('p', { class: 'text text--soft', text: 'Or say it in your own words:' }, area);
       }
+      // The helper sits above the box on a short screen: below it, it is the
+      // thing that falls off, and it is the only reason the primary is grey.
+      const short = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;
+      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, short ? area : null);
       const ta = el('textarea', { class: 'say', id: 'say', 'aria-label': it.question }, area);
       if (it.kind === 'number') { ta.setAttribute('inputmode', 'decimal'); ta.style.minHeight = '5rem'; }
+      if (!short) area.appendChild(hint);
       const T = trackTyping(ta);
       pending.typing = T;
       ui.actions([
         { label: 'Skip this one', kind: 'secondary', onClick: () => { if (!busy) finishItem(it, { skipped: true }); } },
-        { id: 'send', label: 'Send', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
-      ]);
-      ta.addEventListener('input', () => ui.setDisabled('send', !ta.value.trim() || busy));
+        { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
+      ], { row: true });   // stacked, this footer is 80px the writing box needs
+      ta.addEventListener('input', () => {
+        ui.setDisabled('send', !ta.value.trim() || busy);
+        hint.hidden = !!ta.value.trim();
+      });
       setTimeout(() => ta.focus(), 0);
     }
 
@@ -142,7 +154,8 @@ export function runChat(ui, ctx) {
     function widgets(it, area) {
       if (it.kind === 'yesno' || it.kind === 'choice') {
         const opts = it.kind === 'yesno' ? ['Yes', 'No'] : it.options;
-        const wrap = el('div', { class: 'answers' + (it.kind === 'yesno' ? ' answers--two' : '') }, area);
+        const wrap = el('div', { class: 'answers'
+          + (it.kind === 'yesno' ? ' answers--two' : opts.length > 5 ? ' answers--many' : '') }, area);
         for (const o of opts) el('button', { type: 'button', class: 'answer', text: o, onclick: () => finishItem(it, { value: o, ratingSource: 'heuristic' }) }, wrap);
         ui.actions([]);
         return;
@@ -151,8 +164,11 @@ export function runChat(ui, ctx) {
         let val = '';
         const read = el('div', { class: 'readout', id: 'readout', text: '— ' + (it.unit || '') }, area);
         const keys = el('div', { class: 'pad-keys' }, area);
+        // Words, not glyphs: an icon-only key is the one this group misreads,
+        // and a lone dot is a 4px thing to aim a label at.
+        const LABEL = { '.': '. point', '⌫': 'Delete' };
         for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫']) {
-          el('button', { type: 'button', text: k,
+          el('button', { type: 'button', text: LABEL[k] || k,
             'aria-label': k === '⌫' ? 'Delete the last number' : k === '.' ? 'Decimal point' : k,
             onclick: () => {
               if (k === '⌫') val = val.slice(0, -1);
@@ -162,20 +178,26 @@ export function runChat(ui, ctx) {
               ui.setDisabled('send', !(val && isFinite(Number(val))));
             } }, keys);
         }
-        ui.actions([{ id: 'send', label: 'Done', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }]);
+        ui.actions([{ id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }]);
         return;
       }
+      const short2 = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;
+      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, short2 ? area : null);
       const ta = el('textarea', { class: 'say', id: 'say', 'aria-label': it.question }, area);
+      if (!short2) area.appendChild(hint);
       pending.typing = trackTyping(ta);
       ui.actions([
         { label: 'Skip this one', kind: 'secondary', onClick: () => finishItem(it, { skipped: true }) },
-        { id: 'send', label: 'Done', kind: 'huge', disabled: true, onClick: () => {
+        { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => {
             const v = ta.value.trim();
             finishItem(it, { said: v, value: v, score: it.id === 'd-back' ? scoreDaysBackwards(v) : null,
               rating: it.kind === 'text' && it.rated ? heuristicRating(v) : null, ratingSource: 'heuristic' });
           } }
-      ]);
-      ta.addEventListener('input', () => ui.setDisabled('send', !ta.value.trim()));
+      ], { row: true });
+      ta.addEventListener('input', () => {
+        ui.setDisabled('send', !ta.value.trim());
+        hint.hidden = !!ta.value.trim();
+      });
       setTimeout(() => ta.focus(), 0);
     }
 

@@ -212,15 +212,17 @@ export function runSignature(ui, ctx) {
 
     // ---- screen 1: the pad
     function askForSignature() {
-      ui.title(`${greeting()}, ${ctx.person}.`);
-      const body = el('div');
+      ui.title(`${greeting()}, ${ctx.person}.`, { compact: true });
+      const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
       el('p', { class: 'text text--large', text: 'Sign my book to come in.' }, body);
       const wrap = el('div', { class: 'pad-wrap', id: 'pad-wrap' }, body);
       canvas = el('canvas', { id: 'pad', 'aria-label': 'Signature pad. Draw your signature with a finger.' }, wrap);
       el('span', { class: 'pad-x', 'aria-hidden': 'true', text: '×' }, wrap);
       el('div', { class: 'pad-line', 'aria-hidden': 'true' }, wrap);
       const hint = el('div', { class: 'pad-hint', id: 'pad-hint', 'aria-hidden': 'true', text: 'Sign on the line' }, wrap);
-      el('p', { class: 'text text--soft', text: 'Any signature is fine. There is no wrong way.' }, body);
+      // The line under the pad doubles as the reason "Done signing" is not yet
+      // live: a greyed button with no explanation is a dead end.
+      const helper = el('p', { class: 'text text--soft', text: 'Sign on the line above, then tap Done signing.' }, body);
       ui.body(body);
       ctx2d = canvas.getContext('2d');
       sig = { shownAt: Math.round(now()), strokes: [] };
@@ -262,11 +264,19 @@ export function runSignature(ui, ctx) {
       canvas.addEventListener('pointercancel', end);
 
       function setActions() {
+        // Both buttons share one row: two stacked rows push the pad under the
+        // footer on a short screen, and a row that appears only once there is
+        // something to clear would resize the pad under their hand. The label
+        // is "Clear", never "Start again": that one, in the top bar, leaves.
+        const clear = { label: 'Clear', kind: 'secondary', onClick: () => {
+          events.push('signature', 'startAgain', { strokesCleared: sig.strokes.length });
+          sig = { shownAt: Math.round(now()), strokes: [] }; live = null; hint.hidden = false; setActions(); redraw();
+        } };
+        helper.textContent = sig.strokes.length
+          ? 'Any signature is fine. There is no wrong way.'
+          : 'Sign on the line above, then tap Done signing.';
         ui.actions([
-          { label: 'Start again', kind: 'secondary', onClick: () => {
-              events.push('signature', 'startAgain', { strokesCleared: sig.strokes.length });
-              sig = { shownAt: Math.round(now()), strokes: [] }; live = null; hint.hidden = false; setActions(); redraw();
-            } },
+          clear,
           { label: 'Done signing', kind: 'huge', disabled: !sig.strokes.length, onClick: () => {
               rec.padWidth = Math.round(padW);
               rec.features = signatureFeatures(sig.strokes, sig.shownAt);
@@ -276,7 +286,7 @@ export function runSignature(ui, ctx) {
               events.push('signature', 'done', { strokes: rec.features.strokes, totalMs: Math.round(rec.features.totalMs) });
               askForDate();
             } }
-        ]);
+        ], { row: true });
       }
       setActions();
       events.push('signature', 'shown', {});
@@ -312,16 +322,26 @@ export function runSignature(ui, ctx) {
       const records = store.add(rec);
       rec.deviation = bl ? deviation(rec, bl, ctx.person) : null;
       events.push('signature', 'complete', { signing: records.length, baselineReady: !!bl });
-      ui.title(`Thank you, ${ctx.person}.`);
-      const body = el('div');
-      el('div', { class: 'notice notice--success', role: 'status',
-        html: '<span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div>' }, body);
+      ui.title(`Thank you, ${ctx.person}.`, { compact: true });
+      // The page is the screen: it never sits below a fold, and it never gets
+      // squashed to a hairline either. On a window too short for both, the
+      // banner goes — "Thank you, Margaret." above it says the same thing, and
+      // the page itself is the message.
+      const room = !(window.matchMedia && window.matchMedia('(max-height: 560px)').matches);
+      ui.fixed(true);
+      const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
+      if (room) {
+        el('div', { class: 'notice notice--success', role: 'status',
+          html: '<span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div>' }, body);
+      }
       const page = el('div', { class: 'page' }, body);
-      page.innerHTML = `<svg viewBox="0 0 400 200" role="img" aria-label="Your signature">`
+      // Date first: on a short screen the signature is what gets cut, and a
+      // half-sliced line of text reads as a broken screen rather than a long one.
+      page.innerHTML = `<p class="page__date">${esc(fmtDate(new Date()))}</p>`
+        + `<svg viewBox="0 0 400 200" role="img" aria-label="Your signature">`
         + `<line x1="30" y1="150" x2="370" y2="150" stroke="#4b5563" stroke-width="2"/>`
         + `<text x="12" y="156" font-size="20" fill="#374151">×</text>`
-        + sigPaths(rec.strokes, 400) + `</svg>`
-        + `<p class="page__date">${esc(fmtDate(new Date()))}</p>`;
+        + sigPaths(rec.strokes, 400) + `</svg>`;
       ui.body(body);
       ui.actions([{ label: 'Carry on', kind: 'huge', onClick: () => resolve(rec) }]);
     }
