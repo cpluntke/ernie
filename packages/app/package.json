@@ -1,0 +1,18 @@
+{
+  "name": "ernie-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The ernie daily visit: sign the guest book, a short chat, a puzzle. Serves the app and reads chat replies with Claude.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.72.0",
+    "zod": "4.6.5"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "ernie",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "npm run build -w ernie-ui",
+    "demo": "npm run demo -w ernie-ui"
+  }
+}

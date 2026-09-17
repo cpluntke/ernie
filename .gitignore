@@ -1,0 +1,10 @@
+node_modules/
+ux-audit-out/
+dist/
+packages/ernie-ui/demo/demo.js
+packages/ernie-ui/demo/styles.css
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

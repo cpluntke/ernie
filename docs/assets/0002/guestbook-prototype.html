@@ -1,0 +1,526 @@
+<title>Sign the Guest Book</title>
+<style>
+  /* ernie-ui tokens, copied from packages/ernie-ui/src/styles.css. Single light theme, as the kit. */
+  :root {
+    --ernie-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --ernie-text: 1.25rem; --ernie-text-lg: 1.5rem; --ernie-heading: 2rem; --ernie-heading-2: 1.5rem;
+    --ernie-ink: #111827; --ernie-ink-soft: #374151; --ernie-paper: #ffffff; --ernie-surface: #f3f4f6;
+    --ernie-border: #4b5563; --ernie-primary: #1e40af; --ernie-primary-ink: #ffffff;
+    --ernie-success: #14532d; --ernie-warning: #7c2d12; --ernie-selected: #dbeafe; --ernie-focus: #111827;
+    --ernie-target: 3.5rem; --ernie-radius: 0.75rem;
+    --ernie-space-1: 0.5rem; --ernie-space-2: 1rem; --ernie-space-3: 1.5rem; --ernie-space-4: 2rem;
+    --ernie-measure: 40rem;
+  }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--ernie-paper); color: var(--ernie-ink); font-family: var(--ernie-font); font-size: var(--ernie-text); line-height: 1.5; overscroll-behavior: none; }
+  * { box-sizing: border-box; }
+  :focus-visible { outline: 4px solid var(--ernie-focus); outline-offset: 3px; }
+  button { font: inherit; }
+
+  .shell { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+  .demo-strip { flex: 0 0 auto; display: flex; align-items: center; gap: 0.75rem; padding: 0 0.75rem; min-height: 2.25rem; background: #111827; color: #e5e7eb; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.8125rem; }
+  .demo-strip__label { letter-spacing: 0.06em; text-transform: uppercase; color: #9ca3af; }
+  .demo-strip__btn { margin-left: auto; min-height: 1.75rem; padding: 0 0.75rem; border-radius: 0.375rem; border: 1px solid #6b7280; background: transparent; color: #e5e7eb; font: inherit; cursor: pointer; }
+  .demo-strip__btn[aria-pressed="true"] { background: #e5e7eb; color: #111827; }
+  .row { flex: 1 1 auto; min-height: 0; display: flex; position: relative; }
+  .app { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; }
+
+  .topbar { display: flex; align-items: center; gap: var(--ernie-space-2); padding: var(--ernie-space-2); border-bottom: 2px solid var(--ernie-border); background: var(--ernie-paper); flex: 0 0 auto; }
+  .topbar__spacer { flex: 1; }
+  .topbar .btn { white-space: nowrap; padding-inline: var(--ernie-space-2); }
+  .body { flex: 1 1 auto; min-height: 0; width: 100%; max-width: var(--ernie-measure); margin: 0 auto; padding: var(--ernie-space-3) var(--ernie-space-2); display: flex; flex-direction: column; overflow-y: auto; }
+  h1 { font-size: var(--ernie-heading); line-height: 1.25; font-weight: 700; margin: 0 0 var(--ernie-space-3); text-wrap: balance; }
+  .text { margin: 0 0 var(--ernie-space-2); max-width: var(--ernie-measure); }
+  .text--large { font-size: var(--ernie-text-lg); }
+  .actions { flex: 0 0 auto; background: var(--ernie-paper); border-top: 2px solid var(--ernie-border); padding: var(--ernie-space-2); }
+  .actions__inner { max-width: var(--ernie-measure); margin: 0 auto; display: flex; flex-direction: column; gap: var(--ernie-space-2); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--ernie-space-1); min-height: var(--ernie-target); min-width: var(--ernie-target); padding: var(--ernie-space-2) var(--ernie-space-3); font-size: var(--ernie-text-lg); font-weight: 700; line-height: 1.25; border-radius: var(--ernie-radius); border: 3px solid var(--ernie-primary); background: var(--ernie-primary); color: var(--ernie-primary-ink); cursor: pointer; text-align: center; }
+  .btn--secondary { background: var(--ernie-paper); color: var(--ernie-primary); }
+  .btn--huge { font-size: var(--ernie-heading); min-height: 5rem; padding: var(--ernie-space-3) var(--ernie-space-4); }
+  .btn--full { display: flex; width: 100%; }
+  .btn:disabled { background: var(--ernie-surface); border-color: var(--ernie-border); color: var(--ernie-ink-soft); cursor: not-allowed; }
+  .btn__icon { font-size: 1.25em; line-height: 1; }
+
+  .choice { border: 0; padding: 0; margin: 0 0 var(--ernie-space-3); }
+  .choice__legend { font-weight: 700; padding: 0; margin-bottom: var(--ernie-space-2); }
+  .choice__options { display: grid; gap: var(--ernie-space-2); grid-template-columns: 1fr; }
+  .choice__option { display: flex; align-items: center; gap: var(--ernie-space-2); min-height: var(--ernie-target); padding: var(--ernie-space-2); font-size: var(--ernie-text-lg); text-align: left; color: var(--ernie-ink); background: var(--ernie-paper); border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); cursor: pointer; }
+  .choice__option[aria-checked="true"] { background: var(--ernie-selected); border-color: var(--ernie-primary); }
+  .choice__mark { flex: 0 0 auto; width: 2rem; height: 2rem; border: 3px solid var(--ernie-border); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: var(--ernie-primary); }
+  .choice__option[aria-checked="true"] .choice__mark { border-color: var(--ernie-primary); }
+
+  /* the pad */
+  .pad-wrap { position: relative; width: 100%; aspect-ratio: 2 / 1; max-height: 20rem; border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: #fffdf7; overflow: hidden; margin: 0 0 var(--ernie-space-2); }
+  .pad-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: crosshair; }
+  .pad-line { position: absolute; left: 8%; right: 8%; bottom: 26%; border-top: 2px solid var(--ernie-border); pointer-events: none; }
+  .pad-x { position: absolute; left: 3%; bottom: 24%; font-size: 1.5rem; color: var(--ernie-ink-soft); pointer-events: none; }
+  .pad-hint { position: absolute; left: 0; right: 0; top: 40%; text-align: center; color: var(--ernie-ink-soft); font-size: var(--ernie-text-lg); pointer-events: none; }
+
+  /* the book page */
+  .page { border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: #fffdf7; padding: var(--ernie-space-2); margin: 0 0 var(--ernie-space-3); }
+  .page svg { display: block; width: 100%; height: auto; }
+  .page__date { margin: var(--ernie-space-1) 0 0; font-weight: 700; }
+  .notice { display: flex; gap: var(--ernie-space-2); align-items: flex-start; padding: var(--ernie-space-2); border: 3px solid var(--ernie-success); border-left-width: 0.75rem; border-radius: var(--ernie-radius); background: var(--ernie-surface); margin: 0 0 var(--ernie-space-3); }
+  .notice__icon { font-size: var(--ernie-heading-2); line-height: 1.25; font-weight: 700; }
+  .notice p { margin: 0; }
+  .notice__title { font-weight: 700; }
+
+  /* backend view */
+  .backend { flex: 0 0 26rem; width: 26rem; max-width: 100%; height: 100%; overflow-y: auto; border-left: 2px solid var(--ernie-border); background: var(--ernie-surface); color: var(--ernie-ink); padding: 1rem; font-size: 0.875rem; line-height: 1.45; }
+  .backend[hidden] { display: none !important; }
+  @media (max-width: 900px) { .backend { position: absolute; inset: 0; width: auto; flex: none; border-left: 0; } }
+  .backend h2 { font-size: 1rem; margin: 0 0 0.25rem; }
+  .backend h3 { font-size: 0.8125rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ernie-ink-soft); margin: 1.25rem 0 0.5rem; }
+  .backend .meta { color: var(--ernie-ink-soft); margin: 0 0 0.75rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.8125rem; }
+  .sentence { background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-left: 0.5rem solid var(--ernie-primary); border-radius: 0.5rem; padding: 0.625rem 0.75rem; font-size: 1rem; }
+  .sentence--flag { border-left-color: var(--ernie-warning); }
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .tile { background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; padding: 0.5rem 0.625rem; }
+  .tile__k { font-size: 0.75rem; color: var(--ernie-ink-soft); }
+  .tile__v { font-size: 1.375rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .tile__d { font-size: 0.75rem; color: var(--ernie-ink-soft); }
+  .chart { background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; padding: 0.5rem 0.625rem; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .tick { font-size: 10px; fill: var(--ernie-ink-soft); font-variant-numeric: tabular-nums; }
+  .chart .grid { stroke: #d1d5db; stroke-width: 1; }
+  .chart .base { stroke: var(--ernie-border); stroke-width: 1; }
+  .chart .line { fill: none; stroke: var(--ernie-primary); stroke-width: 2; stroke-linejoin: round; }
+  .chart .empty { fill: var(--ernie-ink-soft); font-size: 12px; }
+  .chart__sub { font-size: 0.75rem; color: var(--ernie-ink-soft); margin: 0.25rem 0 0; }
+  .strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); gap: 0.5rem; }
+  .strip__item { background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; padding: 0.25rem; text-align: center; font-size: 0.7rem; color: var(--ernie-ink-soft); }
+  .strip__item--today { border: 2px solid var(--ernie-primary); }
+  .strip__item svg { display: block; width: 100%; height: auto; }
+  .strip__item svg path { fill: none; stroke: var(--ernie-ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  table.z { border-collapse: collapse; width: 100%; font-size: 0.8125rem; background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; }
+  table.z th, table.z td { text-align: left; padding: 0.3rem 0.5rem; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  table.z th { font-size: 0.7rem; color: var(--ernie-ink-soft); letter-spacing: 0.04em; text-transform: uppercase; }
+  table.z td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.z tr.flag td { font-weight: 700; }
+  .log { list-style: none; margin: 0; padding: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.75rem; background: var(--ernie-paper); border: 1px solid var(--ernie-border); border-radius: 0.5rem; max-height: 12rem; overflow-y: auto; }
+  .log li { padding: 0.2rem 0.5rem; border-bottom: 1px solid #e5e7eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log li:first-child { background: var(--ernie-selected); }
+  .log .t { color: var(--ernie-ink-soft); display: inline-block; width: 4.25rem; }
+  pre.payload { margin: 0; padding: 0.5rem; font-size: 0.72rem; line-height: 1.35; background: #111827; color: #e5e7eb; border-radius: 0.5rem; overflow-x: auto; max-height: 16rem; }
+  .backend .note { font-size: 0.75rem; color: var(--ernie-ink-soft); margin: 0.5rem 0 0; }
+  .backend .small-btn { min-height: 2rem; padding: 0 0.75rem; font-size: 0.8125rem; border-radius: 0.375rem; border: 1px solid var(--ernie-border); background: var(--ernie-paper); color: var(--ernie-ink); cursor: pointer; margin-top: 0.5rem; }
+  [hidden] { display: none !important; }
+</style>
+
+<div class="shell">
+<div class="demo-strip">
+  <span class="demo-strip__label">Demo</span>
+  <span>Sign the Guest Book · sketch 0002</span>
+  <button type="button" class="demo-strip__btn" id="backend-toggle" aria-pressed="false" aria-controls="backend">Backend view</button>
+</div>
+<div class="row">
+<div class="app">
+  <header class="topbar">
+    <button class="btn btn--secondary" id="back" type="button"><span class="btn__icon" aria-hidden="true">←</span><span>Go back</span></button>
+    <span class="topbar__spacer"></span>
+    <button class="btn btn--secondary" id="home" type="button"><span class="btn__icon" aria-hidden="true">⌂</span><span>Start</span></button>
+  </header>
+
+  <!-- 1. invite -->
+  <main class="body" id="screen-invite">
+    <h1 id="greeting">Good morning, Margaret.</h1>
+    <p class="text text--large">Would you sign my book?</p>
+    <p class="text">It only takes a moment. Sign with your finger, like you would in a real visitors' book.</p>
+  </main>
+
+  <!-- 2. sign -->
+  <main class="body" id="screen-sign" hidden>
+    <h1>Please sign here</h1>
+    <div class="pad-wrap" id="pad-wrap">
+      <canvas id="pad" aria-label="Signature pad. Draw your signature with a finger."></canvas>
+      <span class="pad-x" aria-hidden="true">×</span>
+      <div class="pad-line" aria-hidden="true"></div>
+      <div class="pad-hint" id="pad-hint" aria-hidden="true">Sign on the line</div>
+    </div>
+    <p class="text">Any signature is fine. There is no wrong way.</p>
+  </main>
+
+  <!-- 3. what is today -->
+  <main class="body" id="screen-date" hidden>
+    <h1>What is today?</h1>
+    <fieldset class="choice">
+      <legend class="choice__legend">Tap the date, as best you know it.</legend>
+      <div class="choice__options" role="radiogroup" aria-label="What is today?" id="date-options"></div>
+    </fieldset>
+  </main>
+
+  <!-- 4. thank you -->
+  <main class="body" id="screen-thanks" hidden>
+    <h1>Thank you, Margaret.</h1>
+    <div class="notice" role="status"><span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div></div>
+    <div class="page">
+      <svg id="page-sig" viewBox="0 0 400 200" role="img" aria-label="Your signature"></svg>
+      <p class="page__date" id="page-date"></p>
+    </div>
+  </main>
+
+  <footer class="actions">
+    <div class="actions__inner">
+      <button class="btn btn--huge btn--full" id="yes" type="button">Yes, I'll sign</button>
+      <button class="btn btn--secondary btn--full" id="again" type="button" hidden>Start again</button>
+      <button class="btn btn--huge btn--full" id="done" type="button" hidden disabled>Done signing</button>
+      <button class="btn btn--huge btn--full" id="carry-on" type="button" hidden>Carry on</button>
+    </div>
+  </footer>
+</div>
+
+<aside class="backend" id="backend" hidden aria-label="Backend view: statistics being collected">
+  <h2>Backend view</h2>
+  <p class="meta" id="be-meta"></p>
+  <div class="sentence" id="be-sentence">Sign a few times to build the baseline.</div>
+  <h3>This signature</h3>
+  <div class="tiles" id="be-tiles"></div>
+  <h3>Today vs usual</h3>
+  <div id="be-z"></div>
+  <h3>Speed over time</h3>
+  <div class="chart" id="be-chart-speed"></div>
+  <h3>The last seven signatures</h3>
+  <div class="strip" id="be-strip"></div>
+  <p class="note">First five build the baseline (days 2 to 7 in the real thing). Everything after is compared with it.</p>
+  <h3>Event stream</h3>
+  <ul class="log" id="be-log"></ul>
+  <h3>Last event, as sent</h3>
+  <pre class="payload" id="be-payload">{}</pre>
+  <h3>Observation, as the server would derive it</h3>
+  <pre class="payload" id="be-observation">{}</pre>
+  <button type="button" class="small-btn" id="be-reset">Forget stored signatures (demo)</button>
+</aside>
+</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var PERSON = 'Margaret';
+  var BASE_N = 5;                 // demo: first five signatures form the baseline
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = { invite: $('screen-invite'), sign: $('screen-sign'), date: $('screen-date'), thanks: $('screen-thanks') };
+  var footer = { yes: $('yes'), again: $('again'), done: $('done'), carryOn: $('carry-on') };
+  var now = function () { return performance.now(); };
+
+  // ---------- storage (per browser, demo only) ----------
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('ernie-guestbook') || '[]'); if (!Array.isArray(records)) records = []; } catch (e) { records = []; }
+  function save() { try { localStorage.setItem('ernie-guestbook', JSON.stringify(records)); } catch (e) {} }
+
+  // ---------- event log ----------
+  var log = [];
+  function record(kind, extra) { var e = { t: Math.round(now()), kind: kind }; for (var k in extra) e[k] = extra[k]; log.push(e); backend.schedule(); }
+
+  // ---------- the pad ----------
+  var pad = $('pad'), ctx = pad.getContext('2d');
+  var padW = 0, padH = 0, dpr = 1;
+  var sig = null;      // { shownAt, strokes: [[{x,y,t}]] } with x,y in pad widths
+  var live = null;     // current stroke while the finger is down
+  function sizePad() {
+    var r = $('pad-wrap').getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    padW = r.width; padH = r.height;
+    pad.width = Math.round(padW * dpr); pad.height = Math.round(padH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+  function redraw() {
+    ctx.clearRect(0, 0, padW, padH);
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#111827';
+    if (!sig) return;
+    sig.strokes.concat(live ? [live] : []).forEach(function (s) {
+      if (!s.length) return;
+      ctx.beginPath();
+      ctx.moveTo(s[0].x * padW, s[0].y * padW);
+      for (var i = 1; i < s.length; i++) ctx.lineTo(s[i].x * padW, s[i].y * padW);
+      if (s.length === 1) ctx.lineTo(s[0].x * padW + 0.1, s[0].y * padW);
+      ctx.stroke();
+    });
+  }
+  function point(ev) { var r = pad.getBoundingClientRect(); return { x: (ev.clientX - r.left) / padW, y: (ev.clientY - r.top) / padW, t: Math.round(now()) }; }
+  pad.addEventListener('pointerdown', function (ev) {
+    if (!sig || live) return;
+    ev.preventDefault();
+    try { pad.setPointerCapture(ev.pointerId); } catch (e) {}
+    live = [point(ev)]; live.pointerId = ev.pointerId; live.type = ev.pointerType;
+    $('pad-hint').hidden = true;
+    if (!sig.strokes.length) record('firstStroke', { sinceShownMs: live[0].t - sig.shownAt, input: ev.pointerType });
+    redraw();
+  });
+  pad.addEventListener('pointermove', function (ev) {
+    if (!live || ev.pointerId !== live.pointerId) return;
+    ev.preventDefault();
+    var evs = ev.getCoalescedEvents ? ev.getCoalescedEvents() : [ev];
+    if (!evs.length) evs = [ev];
+    evs.forEach(function (e) { live.push(point(e)); });
+    redraw();
+  });
+  function endStroke(ev) {
+    if (!live || ev.pointerId !== live.pointerId) return;
+    var s = live; live = null;
+    sig.strokes.push(s);
+    record('stroke', { n: sig.strokes.length, points: s.length, durationMs: s[s.length - 1].t - s[0].t });
+    footer.done.disabled = false;
+    redraw();
+  }
+  pad.addEventListener('pointerup', endStroke);
+  pad.addEventListener('pointercancel', endStroke);
+  window.addEventListener('resize', function () { if (current === 'sign') sizePad(); });
+
+  // ---------- features ----------
+  function resample(stroke, dt) {
+    if (stroke.length < 2) return null;
+    var out = [], t0 = stroke[0].t, t1 = stroke[stroke.length - 1].t;
+    if (t1 - t0 < 40) return null;
+    var j = 0;
+    for (var t = t0; t <= t1; t += dt) {
+      while (j < stroke.length - 2 && stroke[j + 1].t < t) j++;
+      var a = stroke[j], b = stroke[j + 1], u = b.t === a.t ? 0 : (t - a.t) / (b.t - a.t);
+      out.push({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, t: t });
+    }
+    return out;
+  }
+  function signatureFeatures(strokes, shownAt) {
+    var f = { strokes: strokes.length };
+    var first = strokes[0][0], last = strokes[strokes.length - 1];
+    f.timeToFirstMs = first.t - shownAt;
+    f.totalMs = last[last.length - 1].t - first.t;
+    f.inAirMs = 0; for (var i = 1; i < strokes.length; i++) f.inAirMs += strokes[i][0].t - strokes[i - 1][strokes[i - 1].length - 1].t;
+    var minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9, pathLen = 0, drawMs = 0, ldlj = [], speedSeries = [];
+    strokes.forEach(function (s) {
+      s.forEach(function (p) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); });
+      var r = resample(s, 10);
+      if (!r) return;
+      var L = 0, T = (r[r.length - 1].t - r[0].t) / 1000, dt = 0.01;
+      var v = [];
+      for (var k = 1; k < r.length; k++) { var dx = r[k].x - r[k - 1].x, dy = r[k].y - r[k - 1].y; L += Math.hypot(dx, dy); v.push({ x: dx / dt, y: dy / dt, t: r[k].t }); }
+      v.forEach(function (q) { speedSeries.push({ t: q.t, v: Math.hypot(q.x, q.y) }); });
+      speedSeries.push(null);   // pen up
+      pathLen += L; drawMs += T * 1000;
+      if (v.length >= 4 && L > 0.005) {
+        var J = 0;
+        for (var m = 2; m < v.length; m++) {
+          var ax1 = (v[m - 1].x - v[m - 2].x) / dt, ay1 = (v[m - 1].y - v[m - 2].y) / dt;
+          var ax2 = (v[m].x - v[m - 1].x) / dt, ay2 = (v[m].y - v[m - 1].y) / dt;
+          var jx = (ax2 - ax1) / dt, jy = (ay2 - ay1) / dt;
+          J += (jx * jx + jy * jy) * dt;
+        }
+        ldlj.push(-Math.log(Math.pow(T, 3) / (L * L) * J));
+      }
+    });
+    f.width = maxX - minX; f.height = maxY - minY;
+    f.pathLen = pathLen;
+    f.meanSpeed = drawMs > 0 ? pathLen / (drawMs / 1000) : 0;        // pad widths per second
+    f.smoothness = ldlj.length ? ldlj.reduce(function (a, b) { return a + b; }, 0) / ldlj.length : null;   // log dimensionless jerk, higher is smoother
+    f.speedSeries = speedSeries;
+    f.shape = shapeVector(strokes);
+    return f;
+  }
+  // 64 points along the whole signature by arc length, centred and scaled, for shape comparison
+  function shapeVector(strokes) {
+    var pts = []; strokes.forEach(function (s) { s.forEach(function (p) { pts.push([p.x, p.y]); }); });
+    if (pts.length < 2) return null;
+    var cum = [0]; for (var i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    var total = cum[cum.length - 1]; if (total === 0) return null;
+    var out = [], j = 0;
+    for (var k = 0; k < 64; k++) {
+      var target = total * k / 63;
+      while (j < pts.length - 2 && cum[j + 1] < target) j++;
+      var u = cum[j + 1] === cum[j] ? 0 : (target - cum[j]) / (cum[j + 1] - cum[j]);
+      out.push([pts[j][0] + (pts[j + 1][0] - pts[j][0]) * u, pts[j][1] + (pts[j + 1][1] - pts[j][1]) * u]);
+    }
+    var cx = 0, cy = 0; out.forEach(function (p) { cx += p[0] / 64; cy += p[1] / 64; });
+    var rms = 0; out.forEach(function (p) { rms += ((p[0] - cx) * (p[0] - cx) + (p[1] - cy) * (p[1] - cy)) / 64; });
+    rms = Math.sqrt(rms) || 1;
+    return out.map(function (p) { return [(p[0] - cx) / rms, (p[1] - cy) / rms]; });
+  }
+  function shapeDistance(a, b) { if (!a || !b) return null; var d = 0; for (var i = 0; i < 64; i++) d += Math.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1]); return d / 64; }
+
+  // ---------- baseline and deviation ----------
+  var FEATS = [
+    { k: 'timeToFirstMs', label: 'Time to first stroke', unit: 'ms', worse: 'up', word: 'more hesitant' },
+    { k: 'totalMs', label: 'Total time', unit: 'ms', worse: 'up', word: 'slower' },
+    { k: 'inAirMs', label: 'In-air time', unit: 'ms', worse: 'up', word: 'more hesitant' },
+    { k: 'strokes', label: 'Strokes', unit: '', worse: 'up', word: 'more broken up' },
+    { k: 'meanSpeed', label: 'Mean speed', unit: 'pad/s', worse: 'down', word: 'slower' },
+    { k: 'smoothness', label: 'Smoothness', unit: 'LDLJ', worse: 'down', word: 'shakier' },
+    { k: 'width', label: 'Width', unit: 'pad', worse: 'down', word: 'smaller' },
+    { k: 'height', label: 'Height', unit: 'pad', worse: 'down', word: 'smaller' },
+    { k: 'shapeDistance', label: 'Shape distance', unit: '', worse: 'up', word: 'a different shape' }
+  ];
+  function median(xs) { var s = xs.slice().sort(function (a, b) { return a - b; }); var n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; }
+  function baseline() {
+    if (records.length < BASE_N) return null;
+    var base = records.slice(0, BASE_N);
+    var template = null;
+    var shapes = base.map(function (r) { return r.shape; }).filter(Boolean);
+    if (shapes.length) { template = []; for (var i = 0; i < 64; i++) { var x = 0, y = 0; shapes.forEach(function (s) { x += s[i][0] / shapes.length; y += s[i][1] / shapes.length; }); template.push([x, y]); } }
+    var stats = {};
+    FEATS.forEach(function (F) {
+      var xs = base.map(function (r) { return F.k === 'shapeDistance' ? shapeDistance(r.shape, template) : r.features[F.k]; }).filter(function (v) { return v != null && isFinite(v); });
+      if (!xs.length) return;
+      var med = median(xs), mad = median(xs.map(function (v) { return Math.abs(v - med); }));
+      // Robust scale, with a floor of 8% of the median: five signatures can be so alike that the
+      // MAD collapses and ordinary day-to-day variation would read as "unusual".
+      var scale = Math.max(1.4826 * mad, Math.abs(med) * 0.08, 1e-6);
+      stats[F.k] = { median: med, mad: mad, scale: scale, n: xs.length };
+    });
+    return { n: BASE_N, template: template, stats: stats };
+  }
+  function deviation(rec, bl) {
+    if (!bl) return null;
+    var z = {}, flags = [], sum = 0, n = 0;
+    FEATS.forEach(function (F) {
+      var st = bl.stats[F.k]; if (!st) return;
+      var v = F.k === 'shapeDistance' ? shapeDistance(rec.shape, bl.template) : rec.features[F.k];
+      if (v == null || !isFinite(v)) return;
+      var zz = (v - st.median) / st.scale;
+      z[F.k] = { value: v, usual: st.median, z: zz };
+      sum += Math.abs(zz); n++;
+      if (Math.abs(zz) > 2) flags.push({ k: F.k, z: zz, word: (F.worse === 'up' ? zz > 0 : zz < 0) ? F.word : (F.k === 'width' || F.k === 'height' ? 'larger' : F.k === 'meanSpeed' || F.k === 'totalMs' ? 'faster' : F.k === 'smoothness' ? 'steadier' : 'quicker to start') });
+    });
+    var words = []; flags.forEach(function (fl) { if (words.indexOf(fl.word) < 0) words.push(fl.word); });
+    var sentence = words.length ? PERSON + "'s signature was " + (words.length === 1 ? words[0] : words.slice(0, -1).join(', ') + ' and ' + words[words.length - 1]) + ' than usual today.' : PERSON + "'s signature was about the same as usual today.";
+    return { z: z, composite: n ? sum / n : null, flags: flags, sentence: sentence };
+  }
+
+  // ---------- flow ----------
+  var current = 'invite', dateOffer = null;
+  function show(name) {
+    current = name;
+    for (var k in screens) screens[k].hidden = k !== name;
+    footer.yes.hidden = name !== 'invite';
+    footer.again.hidden = name !== 'sign';
+    footer.done.hidden = name !== 'sign';
+    footer.carryOn.hidden = name !== 'thanks';
+    $('back').hidden = name === 'invite';
+    if (name === 'sign') { requestAnimationFrame(sizePad); }
+  }
+  function greet() { var h = new Date().getHours(); $('greeting').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', ' + PERSON + '.'; }
+  function startSigning() {
+    log = []; record('start', { signing: records.length + 1 });
+    sig = { shownAt: Math.round(now()), strokes: [] }; live = null;
+    footer.done.disabled = true; $('pad-hint').hidden = false;
+    show('sign'); record('shown', {});
+    backend.schedule();
+  }
+  footer.yes.addEventListener('click', startSigning);
+  footer.again.addEventListener('click', function () { if (!sig) return; record('startAgain', { strokesCleared: sig.strokes.length }); sig = { shownAt: Math.round(now()), strokes: [] }; live = null; footer.done.disabled = true; $('pad-hint').hidden = false; redraw(); });
+  footer.done.addEventListener('click', function () {
+    if (!sig || !sig.strokes.length) return;
+    var f = signatureFeatures(sig.strokes, sig.shownAt);
+    sig.features = f;
+    record('done', { strokes: f.strokes, totalMs: f.totalMs, pathLen: +f.pathLen.toFixed(3) });
+    offerDates(); show('date');
+  });
+  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function fmt(d) { return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+  function offerDates() {
+    var today = new Date(); today.setHours(12, 0, 0, 0);
+    var opts = [-1, 0, 1].map(function (o) { var d = new Date(today); d.setDate(d.getDate() + o); return { label: fmt(d), offset: o }; });
+    for (var i = opts.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = opts[i]; opts[i] = opts[j]; opts[j] = t; }
+    opts.push({ label: "I'm not sure", offset: null });
+    dateOffer = { shownAt: Math.round(now()), options: opts };
+    $('date-options').innerHTML = opts.map(function (o, i) { return '<button type="button" role="radio" aria-checked="false" class="choice__option" data-i="' + i + '"><span class="choice__mark" aria-hidden="true"></span><span>' + o.label + '</span></button>'; }).join('');
+  }
+  $('date-options').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[role=radio]'); if (!b || !dateOffer) return;
+    var o = dateOffer.options[+b.getAttribute('data-i')];
+    b.setAttribute('aria-checked', 'true'); b.querySelector('.choice__mark').textContent = '✓';
+    var answer = { picked: o.offset, correct: o.offset === 0, notSure: o.offset === null, responseMs: Math.round(now()) - dateOffer.shownAt };
+    record('dateAnswered', answer);
+    finish(answer);
+  });
+  function finish(dateAnswer) {
+    var f = sig.features;
+    var rec = { at: new Date().toISOString(), padWidth: Math.round(padW), input: (sig.strokes[0].type || 'finger'),
+      strokes: sig.strokes.map(function (s) { return s.map(function (p) { return [+p.x.toFixed(4), +p.y.toFixed(4), p.t - sig.shownAt]; }); }),
+      features: { timeToFirstMs: f.timeToFirstMs, totalMs: f.totalMs, inAirMs: f.inAirMs, strokes: f.strokes, meanSpeed: +f.meanSpeed.toFixed(4), smoothness: f.smoothness == null ? null : +f.smoothness.toFixed(3), width: +f.width.toFixed(4), height: +f.height.toFixed(4), pathLen: +f.pathLen.toFixed(4) },
+      shape: f.shape, dateAnswer: dateAnswer };
+    records.push(rec); save();
+    record('complete', { signing: records.length });
+    // the page in the book
+    $('page-sig').innerHTML = '<line x1="30" y1="150" x2="370" y2="150" stroke="#4b5563" stroke-width="2"/><text x="12" y="156" font-size="20" fill="#374151">×</text>' + sigPaths(rec.strokes, 400, 200, 1) ;
+    var today = new Date(); $('page-date').textContent = fmt(today);
+    show('thanks');
+    setTimeout(function () { backend.render(); }, 0);
+  }
+  function sigPaths(strokes, w, h, strokeW) {
+    var padw = w;   // strokes are in pad widths; pad aspect 2:1 matches 400x200
+    return strokes.map(function (s) { if (!s.length) return ''; var d = 'M ' + (s[0][0] * padw).toFixed(1) + ' ' + (s[0][1] * padw).toFixed(1); for (var i = 1; i < s.length; i++) d += ' L ' + (s[i][0] * padw).toFixed(1) + ' ' + (s[i][1] * padw).toFixed(1); if (s.length === 1) d += ' l 0.5 0'; return '<path d="' + d + '" fill="none" stroke="#111827" stroke-width="' + (strokeW * 3) + '" stroke-linecap="round" stroke-linejoin="round"/>'; }).join('');
+  }
+  footer.carryOn.addEventListener('click', function () { sig = null; show('invite'); backend.schedule(); });
+  $('back').addEventListener('click', function () { if (current === 'date') { show('sign'); } else { sig = null; show('invite'); } });
+  $('home').addEventListener('click', function () { sig = null; show('invite'); });
+
+  // ---------- backend view ----------
+  var backend = {
+    open: false, pending: false,
+    schedule: function () { if (!backend.open || backend.pending) return; backend.pending = true; requestAnimationFrame(function () { backend.pending = false; backend.render(); }); },
+    toggle: function (on) { backend.open = on; $('backend').hidden = !on; $('backend-toggle').setAttribute('aria-pressed', on ? 'true' : 'false'); if (on) backend.render(); },
+    render: function () {
+      var bl = baseline();
+      var latest = records.length ? records[records.length - 1] : null;
+      var showing = (sig && sig.features) ? { features: sig.features, shape: sig.features.shape, live: true } : latest;
+      var ms = function (v) { return v == null ? '–' : v >= 1000 ? (v / 1000).toFixed(2) + ' s' : Math.round(v) + ' ms'; };
+      $('be-meta').textContent = 'signings stored ' + records.length + ' · baseline ' + (bl ? 'ready (' + BASE_N + ' signatures)' : records.length + ' of ' + BASE_N) + ' · events this session ' + log.length + (sig && sig.strokes ? ' · strokes so far ' + sig.strokes.length : '');
+      var dev = (bl && showing) ? deviation(showing, bl) : null;
+      var isBaselineSig = latest && !sig && records.length <= BASE_N;
+      var se = $('be-sentence');
+      if (dev && !(records.length <= BASE_N && !sig)) { se.textContent = dev.sentence + (dev.flags.length ? '' : '') ; se.className = 'sentence' + (dev.flags.length ? ' sentence--flag' : ''); }
+      else if (!bl) { se.textContent = 'Building the baseline: ' + records.length + ' of ' + BASE_N + ' signatures. No comparison yet.'; se.className = 'sentence'; }
+      else { se.textContent = 'Baseline ready. The next signature is compared with it.'; se.className = 'sentence'; }
+      if (!showing) { $('be-tiles').innerHTML = '<div class="tile"><div class="tile__k">Nothing signed yet</div></div>'; }
+      else {
+        var f = showing.features;
+        var tiles = [
+          ['Time to first stroke', ms(f.timeToFirstMs), 'initiation'],
+          ['Total time', ms(f.totalMs), 'first touch to last lift'],
+          ['In-air time', ms(f.inAirMs), 'between strokes'],
+          ['Strokes', String(f.strokes), 'pen lifts + 1'],
+          ['Mean speed', f.meanSpeed.toFixed(2) + ' pad/s', 'path length over drawing time'],
+          ['Smoothness', f.smoothness == null ? '–' : f.smoothness.toFixed(2), 'log dimensionless jerk; higher is smoother'],
+          ['Size', Math.round(f.width * 100) + '% × ' + Math.round(f.height * 100) + '%', 'of pad width'],
+          ['Shape distance', dev && dev.z.shapeDistance ? dev.z.shapeDistance.value.toFixed(3) : (bl ? '–' : 'needs baseline'), 'vs baseline template']
+        ];
+        $('be-tiles').innerHTML = tiles.map(function (r) { return '<div class="tile"><div class="tile__k">' + r[0] + '</div><div class="tile__v">' + r[1] + '</div><div class="tile__d">' + r[2] + '</div></div>'; }).join('');
+      }
+      if (dev) {
+        var rows = FEATS.map(function (F) { var q = dev.z[F.k]; if (!q) return ''; var fl = Math.abs(q.z) > 2; var fmtv = function (v) { return F.unit === 'ms' ? ms(v) : F.unit === '' ? (Number.isInteger(v) ? v : v.toFixed(3)) : v.toFixed(3); }; return '<tr class="' + (fl ? 'flag' : '') + '"><td>' + F.label + '</td><td class="num">' + fmtv(q.value) + '</td><td class="num">' + fmtv(q.usual) + '</td><td class="num">' + (q.z >= 0 ? '+' : '') + q.z.toFixed(1) + (fl ? ' unusual' : '') + '</td></tr>'; }).join('');
+        $('be-z').innerHTML = '<table class="z"><thead><tr><th>Feature</th><th class="num">Today</th><th class="num">Usual</th><th class="num">Robust z</th></tr></thead><tbody>' + rows + '</tbody></table><p class="note">Robust z = (today − median) / (1.4826 × MAD) over the ' + BASE_N + ' baseline signatures. Composite ' + (dev.composite == null ? '–' : dev.composite.toFixed(2)) + ' · features beyond 2: ' + dev.flags.length + '.</p>';
+      } else {
+        $('be-z').innerHTML = '<p class="note">' + (bl ? 'Sign once more to compare.' : 'Needs ' + (BASE_N - records.length) + ' more signature' + (BASE_N - records.length === 1 ? '' : 's') + ' for a baseline.') + '</p>';
+      }
+      speedChart($('be-chart-speed'), showing ? (showing.features.speedSeries || seriesFrom(showing)) : []);
+      $('be-strip').innerHTML = records.slice(-7).map(function (r, i, arr) { var idx = records.length - arr.length + i; var lbl = idx < BASE_N ? 'Day ' + (idx + 1) + ' · baseline' : (idx === records.length - 1 ? 'Today' : 'Day ' + (idx + 1)); return '<div class="strip__item' + (idx === records.length - 1 ? ' strip__item--today' : '') + '"><svg viewBox="0 0 200 100">' + sigPaths(r.strokes, 200, 100, 0.7) + '</svg>' + lbl + '</div>'; }).join('') || '<p class="note">No signatures stored yet.</p>';
+      $('be-log').innerHTML = log.slice(-60).reverse().map(function (e) { var extra = Object.keys(e).filter(function (k) { return k !== 't' && k !== 'kind'; }).map(function (k) { return k + '=' + e[k]; }).join(' '); return '<li><span class="t">+' + ((e.t - log[0].t) / 1000).toFixed(1) + 's</span>' + e.kind + ' ' + extra + '</li>'; }).join('');
+      var last = log[log.length - 1];
+      $('be-payload').textContent = last ? JSON.stringify({ id: 'evt_' + log.length.toString(36), task: 'signature', kind: 'signature.' + last.kind, t: last.t - log[0].t, payload: (function () { var o = {}; for (var k in last) if (k !== 't' && k !== 'kind') o[k] = last[k]; return o; })() }, null, 1) : '{}';
+      $('be-observation').textContent = latest ? JSON.stringify({ task: 'signature', day: latest.at.slice(0, 10), deviceId: 'this-phone', inputType: latest.input, padWidth: latest.padWidth, methodVersion: 1, features: latest.features, dateAnswer: latest.dateAnswer, baseline: bl ? { n: bl.n, composite: dev ? +dev.composite.toFixed(2) : null, flags: dev ? dev.flags.map(function (x) { return x.k; }) : [], sentence: dev ? dev.sentence : null } : { n: records.length, status: 'building' }, rawStrokes: '[' + latest.strokes.length + ' strokes, ' + latest.strokes.reduce(function (a, s) { return a + s.length; }, 0) + ' points, kept]' }, null, 1) : '{}';
+    }
+  };
+  function seriesFrom(rec) { var strokes = rec.strokes.map(function (s) { return s.map(function (p) { return { x: p[0], y: p[1], t: p[2] }; }); }); return signatureFeatures(strokes, 0).speedSeries; }
+  function speedChart(host, series) {
+    var W = 360, H = 110, padL = 34, padR = 6, padT = 8, padB = 18;
+    var pts = series.filter(Boolean);
+    if (!pts.length) { host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '"><text class="empty" x="' + (padL + 8) + '" y="' + (H / 2) + '">Nothing yet</text></svg>'; return; }
+    var t0 = pts[0].t, t1 = pts[pts.length - 1].t, max = Math.max(0.5, Math.max.apply(null, pts.map(function (p) { return p.v; })) * 1.1);
+    var x = function (t) { return padL + (t - t0) / Math.max(1, t1 - t0) * (W - padL - padR); }, y = function (v) { return padT + (1 - v / max) * (H - padT - padB); };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Pen speed over time">';
+    [0, max / 2, max].forEach(function (tv) { s += '<line class="' + (tv === 0 ? 'base' : 'grid') + '" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(tv).toFixed(1) + '" y2="' + y(tv).toFixed(1) + '"/><text class="tick" x="' + (padL - 4) + '" y="' + (y(tv) + 3.5).toFixed(1) + '" text-anchor="end">' + tv.toFixed(1) + '</text>'; });
+    var d = '', pen = false;
+    series.forEach(function (p) { if (!p) { pen = false; return; } d += (pen ? ' L ' : ' M ') + x(p.t).toFixed(1) + ' ' + y(p.v).toFixed(1); pen = true; });
+    s += '<path class="line" d="' + d.trim() + '"/>';
+    s += '<text class="tick" x="' + padL + '" y="' + (H - 4) + '">0 s</text><text class="tick" x="' + (W - padR) + '" y="' + (H - 4) + '" text-anchor="end">' + ((t1 - t0) / 1000).toFixed(1) + ' s</text></svg>';
+    host.innerHTML = s + '<p class="chart__sub">Pad widths per second, resampled at 10 ms. Gaps are pen lifts. Tremor shows as ripple; hesitation as dips.</p>';
+  }
+  $('backend-toggle').addEventListener('click', function () { backend.toggle(!backend.open); });
+  $('be-reset').addEventListener('click', function () { records = []; save(); backend.render(); });
+
+  greet(); show('invite');
+  if (window.innerWidth > 900) backend.toggle(true);
+})();
+</script>

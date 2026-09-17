@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 20px; line-height: 1.5; color: #111827; background: #ffffff; }
+    * { box-sizing: border-box; }
+    a { color: #1e40af; } a:hover { color: #1e3a8a; }
+  </style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec5ff"/><stop offset="1" stop-color="#dff1ff"/></linearGradient>
+<linearGradient id="lake" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa9e6"/><stop offset="1" stop-color="#2f6fb5"/></linearGradient>
+<symbol id="scene" viewBox="0 0 1200 900">
+<rect width="1200" height="900" fill="url(#sky)"/>
+<circle cx="1010" cy="150" r="90" fill="#ffd166"/>
+<circle cx="1010" cy="150" r="115" fill="#ffd166" opacity="0.25"/>
+<g fill="#ffffff"><ellipse cx="260" cy="170" rx="120" ry="48"/><ellipse cx="330" cy="140" rx="90" ry="55"/><ellipse cx="190" cy="150" rx="70" ry="40"/>
+<ellipse cx="700" cy="120" rx="100" ry="38"/><ellipse cx="760" cy="95" rx="70" ry="42"/></g>
+<g stroke="#334155" stroke-width="6" fill="none" stroke-linecap="round"><path d="M560 250 q20 -25 40 0 q20 -25 40 0"/><path d="M640 300 q15 -20 30 0 q15 -20 30 0"/></g>
+<path d="M0 470 Q200 330 420 440 T900 420 T1200 470 V620 H0Z" fill="#a3c98d"/>
+<path d="M300 500 Q520 380 760 480 T1200 460 V640 H0 V560 Q150 470 300 500Z" fill="#6f9f5a"/>
+<path d="M0 640 Q400 600 1200 650 V900 H0Z" fill="#4f8a3f"/>
+<path d="M620 600 Q820 560 1200 610 V690 Q820 720 620 690Z" fill="url(#lake)"/>
+<g><path d="M840 655 l20 25 h110 l20 -25Z" fill="#8b4513"/><rect x="908" y="590" width="6" height="65" fill="#333"/><path d="M914 592 l60 55 h-60Z" fill="#f8fafc"/></g>
+<g><rect x="80" y="520" width="34" height="200" fill="#6b4423"/><circle cx="97" cy="470" r="120" fill="#2f7a3d"/><circle cx="40" cy="520" r="80" fill="#3d8f4a"/><circle cx="170" cy="510" r="85" fill="#3d8f4a"/><circle cx="110" cy="400" r="70" fill="#4aa356"/></g>
+<g><rect x="420" y="480" width="260" height="190" fill="#c8402f"/><path d="M400 480 L550 370 L700 480Z" fill="#7a2e1f"/><rect x="620" y="390" width="34" height="70" fill="#7a2e1f"/>
+<rect x="525" y="580" width="60" height="90" fill="#f4e4c1"/><circle cx="574" cy="628" r="5" fill="#333"/>
+<rect x="445" y="510" width="55" height="55" fill="#e0f2fe" stroke="#f4e4c1" stroke-width="6"/><rect x="600" y="510" width="55" height="55" fill="#e0f2fe" stroke="#f4e4c1" stroke-width="6"/>
+<path d="M445 537 h55 M472 510 v55 M600 537 h55 M627 510 v55" stroke="#f4e4c1" stroke-width="5"/></g>
+<path d="M560 670 Q520 780 380 900 H700 Q640 780 590 670Z" fill="#e6d3a3"/>
+<g stroke="#f8fafc" stroke-width="10" stroke-linecap="round"><path d="M760 700 V760 M810 700 V760 M860 700 V760 M910 700 V760 M960 700 V760 M1010 700 V760"/><path d="M740 720 H1030 M740 745 H1030" stroke-width="8"/></g>
+<g><g fill="#ffd166"><circle cx="120" cy="790" r="22"/><circle cx="200" cy="830" r="22"/><circle cx="60" cy="860" r="22"/><circle cx="260" cy="780" r="22"/></g>
+<g fill="#7a3e12"><circle cx="120" cy="790" r="8"/><circle cx="200" cy="830" r="8"/><circle cx="60" cy="860" r="8"/><circle cx="260" cy="780" r="8"/></g>
+<g stroke="#2f7a3d" stroke-width="8" stroke-linecap="round"><path d="M120 812 v70 M200 852 v48 M60 882 v18 M260 802 v80"/></g>
+<g fill="#e05780"><circle cx="1060" cy="820" r="18"/><circle cx="1130" cy="860" r="18"/><circle cx="980" cy="870" r="18"/><circle cx="1180" cy="800" r="18"/></g>
+<g stroke="#2f7a3d" stroke-width="7" stroke-linecap="round"><path d="M1060 838 v50 M1130 878 v22 M980 888 v12 M1180 818 v70"/></g></g>
+</symbol></defs></svg>
+<div style="width:390px;min-height:900px;display:flex;flex-direction:column;background:#ffffff">
+<header style="display:flex;align-items:center;gap:16px;padding:16px;border-bottom:2px solid #4b5563;background:#ffffff"><button style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;min-width:56px;padding:16px 16px;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size:24px;font-weight:700;line-height:1.25;border-radius:12px;border:3px solid #1e40af;background:#ffffff;color:#1e40af;text-align:center;cursor:pointer"><span aria-hidden="true" style="font-size:1.25em;line-height:1">←</span><span>Go back</span></button><span style="flex:1"></span><button style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;min-width:56px;padding:16px 16px;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size:24px;font-weight:700;line-height:1.25;border-radius:12px;border:3px solid #1e40af;background:#ffffff;color:#1e40af;text-align:center;cursor:pointer"><span aria-hidden="true" style="font-size:1.25em;line-height:1">⌂</span><span>Start</span></button></header>
+<main style="flex:1;width:100%;max-width:640px;margin:0 auto;padding:24px 16px">
+<h1 style="font-size:32px;line-height:1.25;font-weight:700;margin:0 0 24px">Shall we put a picture back together?</h1>
+<div style="border:3px solid #4b5563;border-radius:12px;overflow:hidden;margin:0 0 24px"><svg viewBox="0 0 1200 900" width="352" height="264" style="display:block"><use href="#scene" width="1200" height="900"></use></svg></div><p style="margin:0 0 16px;max-width:640px;font-size:24px">It is in 12 pieces. There is no hurry.</p>
+</main>
+<footer style="position:sticky;bottom:0;background:#ffffff;border-top:2px solid #4b5563;padding:16px">
+<div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px"><button style="display:flex;width:100%;align-items:center;justify-content:center;gap:8px;min-height:80px;min-width:56px;padding:24px 32px;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;font-size:32px;font-weight:700;line-height:1.25;border-radius:12px;border:3px solid #1e40af;background:#1e40af;color:#ffffff;text-align:center;cursor:pointer"><span>Yes, let's do it</span></button></div>
+</footer>
+</div>
+</x-dc>
+</body>
+</html>

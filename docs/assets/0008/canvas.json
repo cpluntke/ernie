@@ -1,0 +1,48 @@
+{
+ "artboards": [
+  {
+   "file": "Invite.dc.html",
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 900,
+   "title": "1 \u00b7 Invite (phone)"
+  },
+  {
+   "file": "Main.dc.html",
+   "x": 480,
+   "y": 0,
+   "w": 390,
+   "h": 960,
+   "title": "2 \u00b7 Puzzle, 12 pieces (phone)"
+  },
+  {
+   "file": "Done.dc.html",
+   "x": 960,
+   "y": 0,
+   "w": 390,
+   "h": 900,
+   "title": "3 \u00b7 Done (phone)"
+  },
+  {
+   "file": "Tablet.dc.html",
+   "x": 1440,
+   "y": 0,
+   "w": 768,
+   "h": 1180,
+   "title": "Puzzle, 20 pieces (tablet), hint shown"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "brief",
+   "x": 0,
+   "y": -170,
+   "w": 420,
+   "text": "0008 Piece together the photo \u2014 sketch\nBuilt from ernie-ui tokens: 20/24/32px type, 56px targets, 3px borders, 16px gaps.\nTap a piece, then tap its slot. No drag needed. No timer, no score.\nAny photo for now; this scene stands in for one."
+  }
+ ],
+ "launch": {
+  "view": "canvas"
+ }
+}
