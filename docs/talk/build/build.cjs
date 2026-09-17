@@ -126,32 +126,31 @@ const phone = (s, file, x, y, h) => {
   const s = pres.addSlide();
   s.background = { color: PAPER };
   title(s, 'How it was built.');
-  sub(s, 'A pipeline with a reviewer in it, so every screen that ships is one an 84-year-old can use.', 8.8, 1.0);
+  sub(s, 'A pipeline with a reviewer in it.', 8.8, 1.0);
   const stages = [
-    ['Research', 'flower-with-no-petals', 'A Claude research agent read the value-based-care and delirium literature and wrote the insight map. A second pass turned W3C, NN/g and gerontology studies into the 80+ design criteria.'],
-    ['Sketches', 'half-a-house', 'Nine design docs on one template, product and engineering in one file: guest book, doodle, find the family, clues, coherence chat, data capture, jigsaw, clinician runbook.'],
-    ['ernie-ui', 'cat-with-no-face', 'A component kit that bakes the criteria in: 56 px targets, 20 px text, 7:1 contrast, a way back on every screen. Synced to Claude Design so mockups use real parts.'],
-    ['The app', null, 'One Node process: the daily visit and a reader. Claude reads her replies as data and never advises; the tap-only fallback works with no model at all.']
+    ['Research', 'flower-with-no-petals', 'A Claude research agent wrote the insight map and the 80+ design criteria.'],
+    ['Sketches', 'half-a-house', 'Nine design docs, one template. Product and engineering in one file.'],
+    ['ernie-ui', 'cat-with-no-face', 'A component kit with the criteria baked in. Synced to Claude Design.'],
+    ['The app', null, 'One small web service. Claude reads her replies as data, never advice. Works without a model.']
   ];
-  const W = 2.05, G = 0.2, Y = 1.75, H = 2.05;
+  const W = 2.05, G = 0.2, Y = 1.75, H = 1.85;
   stages.forEach(([h, d, b], i) => {
     const x = 0.6 + i * (W + G);
     R(s, { x, y: Y, w: W, h: H, fill: { color: i === 3 ? BLUE : LIGHT } });
-    T(s, h, { x: x + 0.15, y: Y + 0.12, w: W - 0.75, h: 0.4, fontSize: 15, bold: true, color: i === 3 ? 'FFFFFF' : INK });
-    if (d) s.addImage({ path: `${S}doodle-${d}-blue.png`, x: x + W - 0.62, y: Y + 0.06, w: 0.55, h: 0.55 });
-    T(s, b, { x: x + 0.15, y: Y + 0.55, w: W - 0.3, h: H - 0.65, fontSize: 9.5, color: i === 3 ? ICE : GREY });
-    if (i < 3) arrow(s, x + W + 0.02, Y + 0.45, x + W + G - 0.02, Y + 0.45, GREY);
+    T(s, h, { x: x + 0.18, y: Y + 0.15, w: W - 0.8, h: 0.4, fontSize: 16, bold: true, color: i === 3 ? 'FFFFFF' : INK });
+    if (d) s.addImage({ path: `${S}doodle-${d}-blue.png`, x: x + W - 0.66, y: Y + 0.08, w: 0.58, h: 0.58 });
+    T(s, b, { x: x + 0.18, y: Y + 0.7, w: W - 0.36, h: H - 0.8, fontSize: 11.5, color: i === 3 ? ICE : GREY });
+    if (i < 3) arrow(s, x + W + 0.02, Y + 0.4, x + W + G - 0.02, Y + 0.4, GREY);
   });
-  // the reviewer loop
-  R(s, { x: 0.6, y: 4.05, w: 8.8, h: 0.85, fill: { color: SOFT } });
-  T(s, 'ux-critic', { x: 0.8, y: 4.13, w: 1.4, h: 0.35, fontSize: 14, bold: true, color: BLUE });
-  T(s, 'A senior-centred reviewer that runs before every pull request: Playwright drives the real page, axe-core checks WCAG, custom checks measure targets, text size, jargon, motion and reflow at 200% zoom against the 80+ checklist. It returns a ranked list; a Blocker or High item blocks the merge.', { x: 2.2, y: 4.1, w: 7.0, h: 0.78, fontSize: 9.5, color: INK });
-  arrow(s, 8.1, Y + H + 0.02, 8.1, 4.03, BLUE);
-  arrow(s, 1.6, 4.03, 1.6, Y + H + 0.02, BLUE);
-  T(s, 'audits', { x: 8.2, y: 3.82, w: 0.8, h: 0.2, fontSize: 8, color: BLUE });
-  T(s, 'fixes go back', { x: 1.7, y: 3.82, w: 1.2, h: 0.2, fontSize: 8, color: BLUE });
-  foot(s, 'Everything in this pipeline is in the repository: docs/, packages/ernie-ui, packages/app, tools/ux-audit, .claude/agents/ux-critic.md.');
-  s.addNotes('4:05. This was built as a pipeline, not a one-off. A research agent produced the insight map and the 80+ criteria. Nine sketches on one doc template, product and engineering together. A component kit with the criteria baked in, synced to Claude Design. The app itself. And a reviewer in the loop: before any UI change merges, a senior-centred critic drives the real page and blocks anything an 84-year-old could not use.');
+  R(s, { x: 0.6, y: 4.0, w: 8.8, h: 0.9, fill: { color: SOFT } });
+  T(s, 'ux-critic', { x: 0.8, y: 4.1, w: 1.5, h: 0.4, fontSize: 16, bold: true, color: BLUE });
+  T(s, 'Runs before every pull request. Drives the real page, checks it against the 80+ checklist, and blocks anything an 84-year-old could not use.', { x: 2.3, y: 4.08, w: 6.9, h: 0.75, fontSize: 11.5, color: INK });
+  arrow(s, 8.1, Y + H + 0.02, 8.1, 3.98, BLUE);
+  arrow(s, 1.6, 3.98, 1.6, Y + H + 0.02, BLUE);
+  T(s, 'audits', { x: 8.2, y: 3.72, w: 0.8, h: 0.2, fontSize: 8, color: BLUE });
+  T(s, 'fixes', { x: 1.7, y: 3.72, w: 0.8, h: 0.2, fontSize: 8, color: BLUE });
+  foot(s, 'All of it is in the repository.');
+  s.addNotes('4:05. Built as a pipeline, not a one-off. A research agent produced the insight map and the 80+ criteria. Nine sketches on one doc template, product and engineering together. A component kit with the criteria baked in, synced to Claude Design. One small web service; Claude reads her replies as data and never advises. And a reviewer in the loop: before any UI change merges, a senior-centred critic drives the real page and blocks anything an 84-year-old could not use.');
 }
 
 // 7 ---------------------------------------------------------------- close
