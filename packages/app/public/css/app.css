@@ -107,10 +107,14 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 /* Two buttons on one line, used where the screen's own thing needs the height.
    The main one keeps twice the width so it never reads as the lesser choice. */
 .actions__inner--row { flex-direction: row; align-items: stretch; }
-.actions__inner--row > .btn { flex: 1 1 0; min-width: 0; padding-inline: var(--ernie-space-2); }
+/* 20px in a row: at 390px two labels have to share one line, and a button
+   three lines tall costs the pad and the writing box the height this layout
+   exists to save. */
+.actions__inner--row > .btn { flex: 1 1 0; min-width: 0; padding-inline: var(--ernie-space-2); font-size: var(--ernie-text); }
 /* Wide enough that the main label stays on one line: a second line here costs
    the pad above it 30px, which is the whole point of putting them on one row. */
-.actions__inner--row > .btn--huge { flex: 3 1 0; font-size: var(--ernie-text-lg); }
+.actions__inner--row > .btn--huge { flex: 2 1 0; font-size: var(--ernie-text-lg); }
+.actions__inner--row > .btn, .actions__inner--row > .btn--huge { white-space: nowrap; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--ernie-space-1);
@@ -304,6 +308,9 @@ textarea.say {
 }
 @media (max-width: 360px) {
   .answers--many .answer { padding-inline: var(--ernie-space-1); }
+  /* Too narrow for both labels on one line. Two lines at 20px beats one line
+     at 18px, and either beats a label clipped by nowrap. */
+  .actions__inner--row > .btn, .actions__inner--row > .btn--huge { white-space: normal; }
 }
 @media (max-height: 660px) and (min-width: 480px) {
   .answers { grid-template-columns: repeat(2, minmax(0, 1fr)); }

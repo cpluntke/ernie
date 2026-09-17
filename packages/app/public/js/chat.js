@@ -101,14 +101,17 @@ export function runChat(ui, ctx) {
       const T = trackTyping(ta);
       pending.typing = T;
       ui.actions([
-        { label: 'Skip this one', kind: 'secondary', onClick: () => { if (!busy) finishItem(it, { skipped: true }); } },
+        { label: 'Skip', kind: 'secondary', onClick: () => { if (!busy) finishItem(it, { skipped: true }); } },
         { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
       ], { row: true });   // stacked, this footer is 80px the writing box needs
       ta.addEventListener('input', () => {
         ui.setDisabled('send', !ta.value.trim() || busy);
         hint.hidden = !!ta.value.trim();
       });
-      setTimeout(() => ta.focus(), 0);
+      // No autofocus. Focusing the box scrolls it into view, which undoes the
+      // anchor on the question and leaves her answering something she has not
+      // read; on a phone it also throws the keyboard up over half the screen
+      // before she has looked at anything. She taps the box when she is ready.
     }
 
     function send(it, text, tapped) {
@@ -187,7 +190,7 @@ export function runChat(ui, ctx) {
       if (!short2) area.appendChild(hint);
       pending.typing = trackTyping(ta);
       ui.actions([
-        { label: 'Skip this one', kind: 'secondary', onClick: () => finishItem(it, { skipped: true }) },
+        { label: 'Skip', kind: 'secondary', onClick: () => finishItem(it, { skipped: true }) },
         { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => {
             const v = ta.value.trim();
             finishItem(it, { said: v, value: v, score: it.id === 'd-back' ? scoreDaysBackwards(v) : null,
@@ -198,7 +201,10 @@ export function runChat(ui, ctx) {
         ui.setDisabled('send', !ta.value.trim());
         hint.hidden = !!ta.value.trim();
       });
-      setTimeout(() => ta.focus(), 0);
+      // No autofocus. Focusing the box scrolls it into view, which undoes the
+      // anchor on the question and leaves her answering something she has not
+      // read; on a phone it also throws the keyboard up over half the screen
+      // before she has looked at anything. She taps the box when she is ready.
     }
 
     function trackTyping(ta) {
