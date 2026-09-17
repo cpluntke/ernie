@@ -32,8 +32,9 @@ const ui = {
     stepsEl.innerHTML = `<p class="steps__label">Step ${index + 1} of ${STEPS.length}: ${esc(STEPS[index])}</p>`
       + `<div class="steps__track" aria-hidden="true">${STEPS.map((s, i) => `<span class="steps__seg${i <= index ? ' steps__seg--done' : ''}"></span>`).join('')}</div>`;
   },
-  actions(list) {
+  actions(list, opts = {}) {
     actionsEl.innerHTML = '';
+    actionsEl.style.flexDirection = opts.row ? 'row' : 'column';
     buttons.clear();
     for (const a of list) {
       const b = el('button', {

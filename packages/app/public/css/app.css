@@ -39,7 +39,30 @@ button, input, textarea, select { font: inherit; }
 }
 .demo-strip__btn[aria-pressed="true"] { background: #e5e7eb; color: #111827; }
 .row { flex: 1 1 auto; min-height: 0; display: flex; position: relative; }
-.app { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; }
+.stage { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; }
+.app { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; background: var(--ernie-paper); }
+
+/* This is a phone app. On a laptop, show it as one rather than stretching it
+   across the window: a phone-width frame on a plain surface, with the demo
+   chrome and the backend view around it. No painted status bar or keyboard —
+   a real device draws its own over the top, and a fake one reads as a toy. */
+@media (min-width: 720px) {
+  .stage {
+    align-items: center; justify-content: center;
+    padding: var(--ernie-space-3) var(--ernie-space-2);
+    background: #e5e7eb;
+  }
+  .app {
+    flex: 0 0 auto;
+    width: 390px;
+    max-width: 100%;
+    max-height: 844px;
+    border: 1px solid #9ca3af;
+    border-radius: 1.75rem;
+    overflow: hidden;
+    box-shadow: 0 12px 34px rgba(17, 24, 39, 0.22);
+  }
+}
 
 .topbar {
   display: flex; align-items: center; gap: var(--ernie-space-2); padding: var(--ernie-space-2);
@@ -149,9 +172,9 @@ textarea.say {
 }
 
 /* -------------------------------------------------------------- jigsaw */
-.play { flex: 1 1 auto; min-height: 0; position: relative; }
+.play { margin: 0 0 var(--ernie-space-2); }
 .play svg {
-  position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none;
+  width: 100%; height: auto; display: block; touch-action: none;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
 .piece { cursor: grab; }
