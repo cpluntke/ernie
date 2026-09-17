@@ -78,7 +78,10 @@ button, input, textarea, select { font: inherit; }
 /* 20px, the floor for body text rather than the 24px the footer uses: at 390px
    the count and the way out have to share one line, and a second row here costs
    the board more than the point size is worth. */
-.topbar .btn { padding-inline: var(--ernie-space-2); overflow-wrap: break-word; min-width: 0; font-size: var(--ernie-text); }
+.topbar .btn {
+  padding-inline: var(--ernie-space-2); overflow-wrap: break-word; min-width: 0;
+  font-size: var(--ernie-text); margin-left: auto;   /* right-aligned on a wrapped row too */
+}
 .body {
   flex: 1 1 auto; min-height: 0; width: 100%; max-width: var(--ernie-measure); margin: 0 auto;
   padding: var(--ernie-space-3) var(--ernie-space-2); display: flex; flex-direction: column;
@@ -212,7 +215,7 @@ textarea.say {
 }
 .pad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--ernie-space-2); margin: 0 0 var(--ernie-space-2); }
 .pad-keys button {
-  min-height: var(--ernie-target); font-size: var(--ernie-heading-2); font-weight: 700;
+  min-height: var(--ernie-target); font-size: var(--ernie-heading-2); font-weight: 700; white-space: nowrap;
   color: var(--ernie-ink); background: var(--ernie-paper); border: 3px solid var(--ernie-border);
   border-radius: var(--ernie-radius); cursor: pointer;
 }
@@ -262,6 +265,9 @@ textarea.say {
   .actions { padding: var(--ernie-space-1); }
   .actions__inner { gap: var(--ernie-space-1); }
   .btn { padding-block: var(--ernie-space-1); }
+  .pad-keys { grid-template-columns: repeat(4, 1fr); gap: var(--ernie-space-1); }
+  .pad-keys button { min-height: 3rem; font-size: var(--ernie-text-lg); }
+  .readout { font-size: var(--ernie-heading-2); padding: var(--ernie-space-1); margin-bottom: var(--ernie-space-1); }
   .demo-strip { display: none; }          /* demo chrome, not the app */
   h1 { font-size: var(--ernie-heading-2); margin-bottom: var(--ernie-space-1); }
   .body { padding-block: var(--ernie-space-1); }
@@ -269,7 +275,7 @@ textarea.say {
   .text--large { font-size: var(--ernie-text); }
   .pad-wrap { min-height: 5.75rem; max-height: none; }
   .topbar { padding: var(--ernie-space-1); }
-  .topbar .btn { min-height: 2.75rem; }
+  .topbar .btn { min-height: 3rem; }   /* the escape hatch stays over 48px */
   .actions { padding: var(--ernie-space-1); }
   .btn--huge { min-height: 3rem; padding-block: var(--ernie-space-1); }
   /* Every pixel the chrome gives up here goes to the board, which is the only

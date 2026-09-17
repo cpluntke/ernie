@@ -164,8 +164,11 @@ export function runChat(ui, ctx) {
         let val = '';
         const read = el('div', { class: 'readout', id: 'readout', text: '— ' + (it.unit || '') }, area);
         const keys = el('div', { class: 'pad-keys' }, area);
+        // Words, not glyphs: an icon-only key is the one this group misreads,
+        // and a lone dot is a 4px thing to aim a label at.
+        const LABEL = { '.': '. point', '⌫': 'Delete' };
         for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫']) {
-          el('button', { type: 'button', text: k,
+          el('button', { type: 'button', text: LABEL[k] || k,
             'aria-label': k === '⌫' ? 'Delete the last number' : k === '.' ? 'Decimal point' : k,
             onclick: () => {
               if (k === '⌫') val = val.slice(0, -1);
@@ -175,7 +178,7 @@ export function runChat(ui, ctx) {
               ui.setDisabled('send', !(val && isFinite(Number(val))));
             } }, keys);
         }
-        ui.actions([{ id: 'send', label: 'Done', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }]);
+        ui.actions([{ id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }]);
         return;
       }
       const short2 = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;

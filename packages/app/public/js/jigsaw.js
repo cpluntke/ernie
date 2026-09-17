@@ -320,7 +320,10 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       if (swallowClick || finished || chosen) return;
       if (ev.target.closest && ev.target.closest('.piece')) return;
       const pt = svgPoint(ev);
-      if (!inPicture(pt.x, pt.y)) instruction.textContent = 'That was a gap. Tap the middle of a piece.';
+      if (!inPicture(pt.x, pt.y)) {
+        instruction.textContent = 'That was a gap. Tap the middle of a piece.'
+          + (hintPiece ? ' The piece with the dashed edge goes in the blue shape.' : '');
+      }
     });
 
     function snap(cl, dragged) {
