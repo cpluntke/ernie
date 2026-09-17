@@ -162,13 +162,18 @@ export function runChat(ui, ctx) {
       }
       if (it.kind === 'number') {
         let val = '';
-        const read = el('div', { class: 'readout', id: 'readout', text: '— ' + (it.unit || '') }, area);
+        const shortPad = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;
+        const padHint = el('p', { class: 'text text--soft', text: 'Tap the numbers, then tap Send my answer.' },
+          shortPad ? area : null);
+        const read = el('div', { class: 'readout', id: 'readout', role: 'status',
+          'aria-label': 'Your answer so far', text: '— ' + (it.unit || '') }, area);
+        if (!shortPad) area.appendChild(padHint);
         const keys = el('div', { class: 'pad-keys' }, area);
         // Words, not glyphs: an icon-only key is the one this group misreads,
         // and a lone dot is a 4px thing to aim a label at.
         const LABEL = { '.': '. point', '⌫': 'Delete' };
         for (const k of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫']) {
-          el('button', { type: 'button', text: LABEL[k] || k,
+          el('button', { type: 'button', text: LABEL[k] || k, class: LABEL[k] ? 'key--word' : '',
             'aria-label': k === '⌫' ? 'Delete the last number' : k === '.' ? 'Decimal point' : k,
             onclick: () => {
               if (k === '⌫') val = val.slice(0, -1);
@@ -178,7 +183,26 @@ export function runChat(ui, ctx) {
               ui.setDisabled('send', !(val && isFinite(Number(val))));
             } }, keys);
         }
-        ui.actions([{ id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }]);
+        // A morning with nothing on the scale must not leave inventing a number
+        // or "Start again", which throws the whole visit away.
+        ui.actions([
+          { label: 'Not today', kind: 'secondary', onClick: () => finishItem(it, { skipped: true }) },
+          { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => finishItem(it, { value: Number(val), ratingSource: 'heuristic' }) }
+        ], { row: true });
+        // Whether the pad fits depends on the card, not the window — a 390px
+        // card inside an 800px window fires no height media query — so measure
+        // it and tighten only when it is actually short of room.
+        requestAnimationFrame(() => {
+          const w = document.getElementById('body-wrap');
+          const ask = document.querySelector('#body-area .ask');
+          if (!w || !ask || !area.isConnected) return;
+          // -16 for the 8px the anchor leaves above the question and a little
+          // slack: measured "fits by 1px" still cut the bottom row by seven.
+          if (area.offsetTop + area.offsetHeight - ask.offsetTop > w.clientHeight - 16) {
+            area.classList.add('pad--tight');
+            ui.scrollToAsk();
+          }
+        });
         return;
       }
       const short2 = window.matchMedia && window.matchMedia('(max-height: 700px)').matches;

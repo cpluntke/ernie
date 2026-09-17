@@ -221,6 +221,16 @@ textarea.say {
    so the word keys stole the width and left "1" and "3" at 35px. Three columns
    at every size, because that is the order a telephone taught her. */
 .pad-keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin: 0 0 var(--ernie-space-2); }
+/* Set by chat.js when the pad does not fit the card it is in. */
+.pad--tight .readout { font-size: var(--ernie-text-lg); margin-bottom: 0.375rem; padding: 0.375rem; }
+.pad--tight .text--soft { font-size: 1.125rem; margin-bottom: 0.25rem; }
+.pad--tight .pad-keys { gap: 0.375rem; margin-bottom: var(--ernie-space-1); }
+.pad--tight .pad-keys button { min-height: 3rem; font-size: var(--ernie-text-lg); }
+.pad--tight .pad-keys .key--word { font-size: var(--ernie-text); }
+
+/* A word does not fit where a digit does: at 320px "Delete" crossed its own
+   border, which is exactly the affordance a button cannot afford to lose. */
+.pad-keys .key--word { font-size: var(--ernie-text); }
 .pad-keys button {
   min-height: var(--ernie-target); font-size: var(--ernie-heading-2); font-weight: 700;
   padding-inline: 0.25rem;

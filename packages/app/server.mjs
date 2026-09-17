@@ -44,7 +44,8 @@ function loginPage({ wrong = false } = {}) {
 <style>
   :root { --ink:#111827; --soft:#374151; --line:#4b5563; --primary:#1e40af; --warn:#7c2d12; }
   * { box-sizing:border-box; }
-  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+  body { margin:0; min-height:100vh; }
+  main { min-height:100vh; display:flex; align-items:center; justify-content:center;
     padding:1.5rem; background:#e5e7eb; color:var(--ink); font-size:1.25rem; line-height:1.5;
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
   form { width:100%; max-width:24rem; background:#fff; border:1px solid #9ca3af; border-radius:1.25rem;
@@ -60,6 +61,7 @@ function loginPage({ wrong = false } = {}) {
   :focus-visible { outline:4px solid var(--ink); outline-offset:3px; }
 </style></head>
 <body>
+  <main>
   <form method="post" action="/api/login">
     <h1>ernie</h1>
     <p>A prototype. Please enter the password you were given.</p>
@@ -68,6 +70,7 @@ function loginPage({ wrong = false } = {}) {
     <input id="password" name="password" type="password" autocomplete="current-password" autofocus required>
     <button type="submit">Go in</button>
   </form>
+  </main>
 </body></html>`;
 }
 
