@@ -212,8 +212,8 @@ export function runSignature(ui, ctx) {
 
     // ---- screen 1: the pad
     function askForSignature() {
-      ui.title(`${greeting()}, ${ctx.person}.`);
-      const body = el('div');
+      ui.title(`${greeting()}, ${ctx.person}.`, { compact: true });
+      const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
       el('p', { class: 'text text--large', text: 'Sign my book to come in.' }, body);
       const wrap = el('div', { class: 'pad-wrap', id: 'pad-wrap' }, body);
       canvas = el('canvas', { id: 'pad', 'aria-label': 'Signature pad. Draw your signature with a finger.' }, wrap);
@@ -262,11 +262,16 @@ export function runSignature(ui, ctx) {
       canvas.addEventListener('pointercancel', end);
 
       function setActions() {
+        // Both buttons share one row: two stacked rows push the pad under the
+        // footer on a short screen, and a row that appears only once there is
+        // something to clear would resize the pad under their hand. The label
+        // is "Clear", never "Start again": that one, in the top bar, leaves.
+        const clear = { label: 'Clear', kind: 'secondary', onClick: () => {
+          events.push('signature', 'startAgain', { strokesCleared: sig.strokes.length });
+          sig = { shownAt: Math.round(now()), strokes: [] }; live = null; hint.hidden = false; setActions(); redraw();
+        } };
         ui.actions([
-          { label: 'Start again', kind: 'secondary', onClick: () => {
-              events.push('signature', 'startAgain', { strokesCleared: sig.strokes.length });
-              sig = { shownAt: Math.round(now()), strokes: [] }; live = null; hint.hidden = false; setActions(); redraw();
-            } },
+          clear,
           { label: 'Done signing', kind: 'huge', disabled: !sig.strokes.length, onClick: () => {
               rec.padWidth = Math.round(padW);
               rec.features = signatureFeatures(sig.strokes, sig.shownAt);
@@ -276,7 +281,7 @@ export function runSignature(ui, ctx) {
               events.push('signature', 'done', { strokes: rec.features.strokes, totalMs: Math.round(rec.features.totalMs) });
               askForDate();
             } }
-        ]);
+        ], { row: true });
       }
       setActions();
       events.push('signature', 'shown', {});

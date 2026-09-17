@@ -48,21 +48,26 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
 
     const cols = count === 20 ? 5 : 4, rows = count === 20 ? 4 : 3;
     const cw = PIC_W / cols, ch = PIC_H / rows, s = Math.min(cw, ch);
-    const M = Math.round(0.4 * s) + 10;
-    const trayTop = M + PIC_H + Math.round(0.4 * s);
-    const PITCH = 0.8;
+    // Margins and tray overlap are kept tight on purpose: the whole board is
+    // scaled to fit the screen, so every unit of padding shrinks the pieces.
+    const M = Math.round(0.12 * s) + 8;
+    const trayTop = M + PIC_H + Math.round(0.18 * s);
+    const PITCH = 0.72;
     const W = PIC_W + 2 * M;
     const H = trayTop + (Math.ceil(count / cols) - 1) * ch * PITCH + ch + M;
     const R = 0.45 * s;                       // magnetic radius, generous on purpose
     const rand = rng(seed);
 
-    // --- screen
-    ui.title('Finish the picture');
-    const body = el('div');
+    // --- screen. The board needs the height, so everything that is not the
+    // board gives it up: no step track, a heading only a screen reader hears,
+    // progress and the way out in the top bar, one button in the footer.
+    ui.title('Finish the picture', { hidden: true });
+    ui.steps(null);
+    ui.fixed(true);
+    const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
     const instruction = el('p', { class: 'text', text: withPartner ? `Drag a piece onto the picture. ${PARTNER} will help.` : 'Drag a piece onto the picture.' }, body);
-    const status = el('p', { class: 'status' }, body);
     const play = el('div', { class: 'play' }, body);
-    const board = svg('svg', { id: 'play', preserveAspectRatio: 'xMidYMin meet', viewBox: `0 0 ${W} ${H}`, 'aria-label': 'Jigsaw pieces and the board' }, play);
+    const board = svg('svg', { id: 'play', preserveAspectRatio: 'xMidYMid meet', viewBox: `0 0 ${W} ${H}`, 'aria-label': 'Jigsaw pieces and the board' }, play);
     ui.body(body);
 
     // --- pieces
@@ -319,7 +324,16 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
     function updateStatus() {
       const left = pieces.length - lockedCount();
       const who = withPartner ? (partner.here ? ` · ${PARTNER} is here` : ` · Waiting for ${PARTNER}`) : '';
-      status.textContent = (left === 0 ? 'All in place.' : left === 1 ? '1 piece left' : `${left} pieces left`) + who;
+      ui.topbarNote((left === 0 ? 'All in place.' : left === 1 ? '1 piece left' : `${left} pieces left`) + who);
+    }
+    function leave() {
+      if (finished) return;
+      finished = true; partnerStop();
+      game.completedAt = now(); game.abandoned = true;
+      rec('abandoned', { placed: lockedCount(), of: pieces.length });
+      game.features = jigsawFeatures(game);
+      ui.fixed(false);
+      resolve(game);
     }
 
     const game = { seed, pieces, count, withPartner, startedAt: now(), firstMoveAt: null, completedAt: null, log,
@@ -332,20 +346,12 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       game.completedAt = now();
       rec('completed', { pieces: pieces.length, byPartner: partner.placed });
       game.features = jigsawFeatures(game);
+      ui.fixed(false);
       resolve(game);
     }
 
-    ui.actions([
-      { label: 'Show me where this goes', kind: 'secondary', onClick: showHint },
-      { label: 'Leave it for now', kind: 'secondary', onClick: () => {
-          if (finished) return;
-          finished = true; partnerStop();
-          game.completedAt = now(); game.abandoned = true;
-          rec('abandoned', { placed: lockedCount(), of: pieces.length });
-          game.features = jigsawFeatures(game);
-          resolve(game);
-        } }
-    ]);
+    ui.topbarAction({ label: 'Leave it', onClick: leave });
+    ui.actions([{ label: 'Show me where this goes', kind: 'secondary', onClick: showHint }]);
     updateStatus();
     rec('shown', { pieces: count, withPartner });
     if (withPartner) partnerStart();

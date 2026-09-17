@@ -22,7 +22,27 @@ const actionsEl = $('actions-inner');
 const buttons = new Map();
 
 const ui = {
-  title(text) { titleEl.textContent = text; titleEl.hidden = !text; },
+  title(text, opts = {}) {
+    titleEl.textContent = text;
+    titleEl.hidden = !text;
+    titleEl.className = opts.hidden ? 'visually-hidden' : opts.compact ? 'title--compact' : '';
+    if (opts.hidden) titleEl.hidden = false;   // still there for a screen reader
+  },
+  // The top bar is the way out of every screen. An activity can relabel it so
+  // leaving does not need a second button eating the height.
+  topbarAction(a) {
+    const b = $('restart');
+    b.lastElementChild.textContent = a ? a.label : 'Start again';
+    b.onclick = a ? a.onClick : () => visitFlow();
+    ui.topbarNote(null);
+  },
+  // Progress lives in the bar's empty half rather than in a line of its own:
+  // on a short screen that line is the difference between a 51px and a 64px piece.
+  topbarNote(text) {
+    const s = $('topbar-note');
+    s.textContent = text || '';
+    s.className = 'topbar__spacer' + (text ? ' topbar__spacer--note' : '');
+  },
   body(node) { bodyEl.innerHTML = ''; if (node) bodyEl.appendChild(node); },
   fixed(on) { $('body-wrap').classList.toggle('body--fixed', !!on); },
   scrollEnd() { const w = $('body-wrap'); w.scrollTop = w.scrollHeight; },
@@ -34,7 +54,7 @@ const ui = {
   },
   actions(list, opts = {}) {
     actionsEl.innerHTML = '';
-    actionsEl.style.flexDirection = opts.row ? 'row' : 'column';
+    actionsEl.className = 'actions__inner' + (opts.row ? ' actions__inner--row' : '');
     buttons.clear();
     for (const a of list) {
       const b = el('button', {
@@ -52,6 +72,7 @@ const ui = {
 
 function say(title, paragraphs, actions, stepIndex) {
   ui.fixed(false);
+  ui.topbarAction(null);
   ui.steps(stepIndex);
   ui.title(title);
   const body = el('div');
@@ -149,7 +170,7 @@ function cleanup() {
 
 // ------------------------------------------------------------------- boot
 const backend = mountBackend(visit);
-$('restart').addEventListener('click', () => visitFlow());
+ui.topbarAction(null);
 
 say('Just a moment…', [{ text: 'Getting ready.', soft: true }], [], null);
 modelClient().then((m) => {
