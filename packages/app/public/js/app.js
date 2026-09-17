@@ -61,6 +61,13 @@ const ui = {
       const asks = w.querySelectorAll('.ask');
       const ask = asks[asks.length - 1];
       if (!ask) { w.scrollTop = 0; return; }
+      // What Ernie said back sits just above the new question. Anchoring on the
+      // question alone put it above the fold, so the reply she was owed was
+      // never actually shown — anchor on the pair, unless they do not fit.
+      const saids = w.querySelectorAll('.said');
+      const said = saids[saids.length - 1];
+      const pairFits = said && (ask.offsetTop + ask.offsetHeight - said.offsetTop) <= w.clientHeight - 16;
+      const anchorEl = pairFits ? said : ask;
       // A short question with little under it cannot reach the top, because the
       // container has nothing left to scroll against — so she reads the
       // transcript where the question should be. A spacer gives it the room.
@@ -69,7 +76,7 @@ const ui = {
       if (!spacer) spacer = el('div', { class: 'scroll-spacer', style: 'flex:0 0 auto' });
       spacer.style.height = '0px';
       bodyEl.appendChild(spacer);
-      const top = Math.max(0, ask.offsetTop - w.offsetTop - 8);
+      const top = Math.max(0, anchorEl.offsetTop - w.offsetTop - 8);
       spacer.style.height = Math.max(0, top + w.clientHeight - w.scrollHeight) + 'px';
       w.scrollTop = top;
     };
