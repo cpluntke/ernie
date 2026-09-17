@@ -55,11 +55,27 @@ const ui = {
   // question at the top instead: question and answers stay on screen together.
   scrollToAsk() {
     const w = $('body-wrap');
-    // The last .ask, not :last-of-type — that matches the last <p> in its
-    // parent, which is the helper line, so the scroll landed on question one.
-    const asks = w.querySelectorAll('.ask');
-    const ask = asks[asks.length - 1];
-    w.scrollTop = ask ? Math.max(0, ask.offsetTop - w.offsetTop - 8) : w.scrollHeight;
+    const apply = () => {
+      // The last .ask, not :last-of-type — that matches the last <p> in its
+      // parent, which is the helper line, so the scroll landed on question one.
+      const asks = w.querySelectorAll('.ask');
+      const ask = asks[asks.length - 1];
+      if (!ask) { w.scrollTop = 0; return; }
+      // A short question with little under it cannot reach the top, because the
+      // container has nothing left to scroll against — so she reads the
+      // transcript where the question should be. A spacer gives it the room.
+      let spacer = bodyEl.querySelector('.scroll-spacer');
+      // flex: 0 0 auto or the flex column simply shrinks the spacer away again.
+      if (!spacer) spacer = el('div', { class: 'scroll-spacer', style: 'flex:0 0 auto' });
+      spacer.style.height = '0px';
+      bodyEl.appendChild(spacer);
+      const top = Math.max(0, ask.offsetTop - w.offsetTop - 8);
+      spacer.style.height = Math.max(0, top + w.clientHeight - w.scrollHeight) + 'px';
+      w.scrollTop = top;
+    };
+    apply();
+    // Again once layout has settled: wrapping and late metrics move the anchor.
+    requestAnimationFrame(apply);
   },
   steps(index) {
     if (index == null) { stepsEl.hidden = true; return; }
