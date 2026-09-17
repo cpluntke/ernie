@@ -323,10 +323,17 @@ export function runSignature(ui, ctx) {
       rec.deviation = bl ? deviation(rec, bl, ctx.person) : null;
       events.push('signature', 'complete', { signing: records.length, baselineReady: !!bl });
       ui.title(`Thank you, ${ctx.person}.`, { compact: true });
-      ui.fixed(true);          // the page is the screen; it never sits below a fold
+      // The page is the screen: it never sits below a fold, and it never gets
+      // squashed to a hairline either. On a window too short for both, the
+      // banner goes — "Thank you, Margaret." above it says the same thing, and
+      // the page itself is the message.
+      const room = !(window.matchMedia && window.matchMedia('(max-height: 560px)').matches);
+      ui.fixed(true);
       const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
-      el('div', { class: 'notice notice--success', role: 'status',
-        html: '<span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div>' }, body);
+      if (room) {
+        el('div', { class: 'notice notice--success', role: 'status',
+          html: '<span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div>' }, body);
+      }
       const page = el('div', { class: 'page' }, body);
       // Date first: on a short screen the signature is what gets cut, and a
       // half-sliced line of text reads as a broken screen rather than a long one.

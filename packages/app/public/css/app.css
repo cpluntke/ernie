@@ -185,7 +185,7 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
   padding: var(--ernie-space-2); margin: 0; display: flex; flex-direction: column;
   flex: 1 1 auto; min-height: 0;
 }
-.page svg { display: block; width: 100%; flex: 1 1 auto; min-height: 3rem; }
+.page svg { display: block; width: 100%; flex: 1 1 auto; min-height: 6rem; }
 .page__date { margin: 0 0 var(--ernie-space-1); font-weight: 700; }
 
 /* ---------------------------------------------------------------- chat */
@@ -252,7 +252,8 @@ textarea.say {
 /* Shorter still: the step track and a full-size heading are furniture, and the
    thing the screen is for goes off the bottom before they do. */
 @media (max-height: 660px) {
-  .steps { display: none; }
+  .steps__track { display: none; }
+  .steps__label { margin: 0; }
   .demo-strip { display: none; }          /* demo chrome, not the app */
   h1 { font-size: var(--ernie-heading-2); margin-bottom: var(--ernie-space-1); }
   .body { padding-block: var(--ernie-space-1); }
@@ -265,7 +266,7 @@ textarea.say {
   .btn--huge { min-height: 3rem; padding-block: var(--ernie-space-1); }
   /* Every pixel the chrome gives up here goes to the board, which is the only
      thing on the puzzle screen anyone has to hit. */
-  .body--fixed .text { font-size: 1rem; margin-bottom: 0.25rem; }
+  .body--fixed .text { font-size: 1.125rem; margin-bottom: 0.25rem; }
   /* The date options have to stay whole: half of "I'm not sure" under the
      footer reads as "the list ends here", and that is the one answer the least
      certain person needs. */
@@ -277,9 +278,18 @@ textarea.say {
   /* The success banner is confirmation, the page below it is the point. */
   .notice { padding: var(--ernie-space-1); gap: var(--ernie-space-1); }
   .notice__icon { font-size: var(--ernie-text); }
-  .page { padding: var(--ernie-space-1); }
-  .page svg { min-height: 2rem; }
+  .page { padding: 0.25rem; }
+  .page svg { min-height: 6rem; }   /* below this the signature is a hairline */
   textarea.say { min-height: 4rem; max-height: 4rem; }
+}
+/* Shorter again — a laptop at 200% zoom. The step line costs 40px that the pad
+   and the sentence explaining the grey button both need more; of the three,
+   progress is the one worth losing. */
+@media (max-height: 560px) {
+  .steps { display: none; }
+}
+@media (max-width: 360px) {
+  .answers--many .answer { padding-inline: var(--ernie-space-1); }
 }
 @media (max-height: 660px) and (min-width: 480px) {
   .answers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
