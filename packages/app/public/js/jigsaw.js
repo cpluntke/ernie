@@ -58,8 +58,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
 
     // --- screen
     ui.title('Finish the picture');
-    ui.fixed(true);
-    const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
+    const body = el('div');
     const instruction = el('p', { class: 'text', text: withPartner ? `Drag a piece onto the picture. ${PARTNER} will help.` : 'Drag a piece onto the picture.' }, body);
     const status = el('p', { class: 'status' }, body);
     const play = el('div', { class: 'play' }, body);
@@ -333,7 +332,6 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       game.completedAt = now();
       rec('completed', { pieces: pieces.length, byPartner: partner.placed });
       game.features = jigsawFeatures(game);
-      ui.fixed(false);
       resolve(game);
     }
 
@@ -345,7 +343,6 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
           game.completedAt = now(); game.abandoned = true;
           rec('abandoned', { placed: lockedCount(), of: pieces.length });
           game.features = jigsawFeatures(game);
-          ui.fixed(false);
           resolve(game);
         } }
     ]);
