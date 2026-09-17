@@ -43,10 +43,14 @@ one measurement that runs underneath whatever is being asked.
 ## 3. Goals and non-goals
 
 **Goals**
-- Run today's runbook items one question at a time, in Ernie's voice, with
-  large tappable answers wherever the answer is one of a few things.
-- Free text only where the answer must be the person's own words; that is
-  where the language signal comes from.
+- Run today's runbook items one question at a time, in Ernie's voice, as a
+  real conversation: the person answers in their own words and a model reads
+  what they meant. Quick answers stay as tappable shortcuts, never the only
+  way through.
+- Ernie's question is always the clinician's verbatim text and a tripped rule
+  always speaks the clinician's verbatim sentence. The model interprets the
+  answer and writes the short acknowledgement; it never writes a question and
+  never writes anything medical.
 - Measure, from every answer: response latency, words per minute, pauses,
   corrections, vocabulary spread, and word-finding markers.
 - Rate each free answer for coherence, tangentiality and word-finding, and
@@ -108,9 +112,8 @@ it goes forward.
 | Screen | Purpose | Primary action | States (empty / loading / error / success) |
 |--------|---------|----------------|--------------------------------------------|
 | Invite | open the conversation | Yes, go ahead | items due today; nothing due ("Nothing to ask today"); already done today |
-| Item: choice / yes-no | one question | tap an answer | unanswered; answered; skipped |
-| Item: number | a measurement | tap the number, then Done | empty (Done disabled); entered; outside a plausible range (asked again once, plainly) |
-| Item: open text | the person's own words | Done | empty; typing; skipped; rating unavailable (nothing shown to the person) |
+| Item (conversation) | one question | Send | empty; typing; quick answers offered; Ernie reading; not understood (one gentle re-ask, at most twice); answered; skipped |
+| Item (no model) | one question | tap an answer, or Done | the tap-only widgets: choice buttons, Yes/No, a number pad, a text box |
 | Trip acknowledgement | say what happens next | Carry on | clinic notified; family notified; logged only |
 | Done | close the visit | Carry on | completed; stopped early (the rest keep for tomorrow) |
 
@@ -138,12 +141,15 @@ Checklist from `docs/research/design-criteria-80-plus.md` section 3:
 
 - [x] One primary action per screen; ≤ 5 tappable things (one item per screen)
 - [x] Every target ≥ 48 px with visible gaps
-- [ ] Tap-only; no gesture is the sole path. **Known deviation:** open
-  questions need typing. Mitigations: at most two per chat, always skippable,
-  and every other item type is tappable. Voice is the real answer and is a
-  non-goal here.
-- [ ] Number pad is 12 targets. **Known deviation:** familiar phone-keypad
-  layout, 56 px keys, one task on the screen.
+- [ ] Tap-only; no gesture is the sole path. **Known deviation:** the
+  conversation invites typing. Mitigations: quick answers are offered for
+  every item that has obvious ones, every question can be skipped, and the
+  model accepts typos, abbreviations and roundabout answers so a rough reply
+  is never wasted. Voice is the real answer and is a non-goal here.
+- [ ] Number pad is 12 targets, in the no-model fallback. **Known
+  deviation:** familiar phone-keypad layout, 56 px keys, one task on the
+  screen. In conversation mode the field asks for a decimal keypad and the
+  model parses "eighty two and a half" as readily as "82,4 kg".
 - [x] Body text ≥ 18 px, works at 200% zoom
 - [x] Text contrast ≥ 7:1; nothing conveyed by colour alone
 - [x] Every icon has a text label
@@ -187,17 +193,51 @@ measurement run underneath:
 | Answer length | engagement, poverty of speech | words per open answer |
 | Skips | engagement, arousal | open questions skipped |
 
-**Rating, when the page can ask a model.** Each free answer is sent with its
-question and rated for coherence, tangentiality and word-finding on a 0–4
-scale with a one-line note. The rating is used only as another feature, and
-the person never sees it. The prototype uses the artifact's own sampling
-capability; where it is unavailable or declined, the session is marked
-`ratingSource: "heuristic"` and everything else still works. The answer is
-sent as data to be rated, never as instructions.
+**Interpretation and rating, in one call per reply.** The reply goes to the
+model with the item's definition and comes back as one structured record:
+whether it was understood, the normalised value, a score where the item has
+one, a short acknowledgement in Ernie's voice, a gentle re-ask when it was
+not understood, a flag when the person volunteered something urgent, and the
+language ratings for open answers. Effort is set to the lowest tier: these
+are short, tightly specified reads. The runtime exposes effort tiers rather
+than model names, so the page requests a tier and the platform picks the
+model.
+
+Rules that hold the shape:
+
+- The reply is delimited data, never instructions, and the delimiter appears
+  exactly once as a tag and never in the surrounding prose.
+- The model may not guess. If it cannot tell what was meant it says so and
+  Ernie re-asks, at most twice, then the item is recorded as answered with
+  whatever was said.
+- `concern` is a flag only. The model is told to set it and say nothing about
+  it; the sentence the person sees is ours, not the model's.
+- Where the model cannot be reached at all, the words are taken as given, the
+  sequence items are scored locally, and the record is marked
+  `ratingSource: "heuristic"`. Where the capability is absent or declined
+  from the start, the chat falls back to the tap-only widgets and completes
+  the same way.
 
 **Across days**, every statistic gets the robust z treatment from 0002
 (median and MAD over the baseline window, with the same floor on the scale),
 and the family sentence is generated the same way.
+
+**Learned while building (conversation).**
+
+- **Interpretation beats validation.** The days-backwards item was the whole
+  argument: matching day names exactly meant "Saterday Fryday Thurdsay" scored
+  zero, so it measured spelling rather than attention. Read by a model the
+  same answer scores seven. Every other item gained the same tolerance for
+  free.
+- **A delimiter must not appear in the prose.** The first prompt wrote the
+  reply tag inside its own instruction sentence as well as around the reply.
+  A test harness parsing the prompt picked the wrong one and fed the
+  instruction text back as the person's answer. A model would probably cope;
+  the shape was still wrong and is now one tag, used once.
+- **Show what the person actually said.** The backend list showed the model's
+  normalised value alone, which hides any misreading. It now shows the
+  person's words and the normalised value beside them, so a wrong reading is
+  visible rather than laundered.
 
 **Learned while building.**
 
@@ -249,8 +289,11 @@ retention decision in 0007's open questions answered before any real use.
 
 | Decision | Chosen | Alternatives considered | Why |
 |----------|--------|-------------------------|-----|
-| Input | typed, with tappable answers wherever possible | voice first | voice is a slice of its own; typed proves the measurement, and the typing rhythm is itself signal |
-| Rating | a model rates each answer; heuristics always run | heuristics only; a trained classifier | the model gives coherence and tangentiality nothing simple can; the heuristics keep the session working without it |
+| Input | a conversation: own words, with tappable shortcuts | fixed widgets per item type; voice first | widgets made the chat brittle (an exact-match scorer measured spelling) and made it feel like a form; voice is a slice of its own |
+| Interpreting the reply | one model call per reply, returning a structured record | client-side parsing; a call only for open answers | one call gives normalisation, scoring, the acknowledgement, the re-ask and the rating together, and typo tolerance everywhere |
+| Effort | the lowest tier | the default tier | the reads are short and tightly specified, and the viewer pays for them |
+| Who writes what | questions and trip sentences verbatim from the clinician; only the acknowledgement and the re-ask from the model | let the model phrase the questions | wording is the safety story in 0009; a generated question is an unreviewed question |
+| An answer it cannot read | re-ask twice, then accept what was said | keep asking; guess | nobody may be trapped on one question, and a guessed answer is worse than a rough one |
 | What the person sees | acknowledgement only | a score, a streak, a summary | fear of failure is the biggest barrier in the research |
 | Conversation shape | Ernie asks, one item per screen | open-ended chat | an open chat invites typing this audience cannot sustain and makes sessions incomparable |
 | Fixed probes | orientation and one logic question every day | runbook items only | the delirium signal must not depend on what a clinician happened to enter |
@@ -282,6 +325,8 @@ scripts; the server side is 0007's M1 and M2.
 | How long is free text kept, and who can read it? It is the most sensitive thing we store. | @cpluntke | before any real use |
 | Should the person ever see their own answers from earlier days, as a diary? | @cpluntke | mid-way review |
 | Two open questions a day, or one? | @cpluntke | mid-way review |
+| The viewer pays for each reply read. Who pays in a real deployment, and does that change the item cap? | @cpluntke | before any real use |
+| A volunteered concern ("my chest felt tight") is flagged and acknowledged, but nothing actually reaches anyone in the prototype. What is the real path, and what is the person told out of hours? | @cpluntke | before any real use |
 
 ## 9. Decision log
 
@@ -289,6 +334,7 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-17 | Answers are now a conversation read by a model rather than precanned widgets: own words with tappable shortcuts, typo tolerance, one gentle re-ask when unclear, a volunteered-concern flag, and the tap-only widgets kept as the no-model fallback. Lowest effort tier | Owner: the precanned answers were doing the wrong job, and exact matching measured spelling |
 | 2026-09-17 | Fixed: the Answers and Language tabs went blank once the person tapped Carry on, because leaving the chat screen cleared the session the backend read from. The backend now keeps today's chat, and restores it after a reload | Owner found it while trying the prototype |
 | 2026-09-17 | Built and linked. Fallback rating recalibrated after it scored ordinary disfluency as severe; delirium items deliberately say nothing back to the person | Testing the prototype |
 | 2026-09-17 | Filled in properly: runbook delivery, ten heuristics, model rating with a heuristic fallback, fixed cognitive probes | Owner asked for the coherence chat as the glue, carrying clinician-entered items |

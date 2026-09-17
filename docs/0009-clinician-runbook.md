@@ -158,7 +158,7 @@ discharge.
 |---|---|---|---|---|---|
 | 1 | "What day of the week is it today?" | choice (7 days) | daily | wrong answer | logged; two days running notifies family |
 | 2 | "Where are you right now?" | choice (at home / in hospital / somewhere else) | daily | wrong answer | logged; notifies family |
-| 3 | "Can you say the days of the week backwards, starting with Saturday?" | text | daily | fewer than 5 correct in sequence, or worse than baseline | logged; with item 1 or 2, notifies clinic |
+| 3 | "Can you say the days of the week backwards, starting with Saturday?" | text | daily | fewer than 5 correct in sequence, read tolerantly (see 0006) | logged; with item 1 or 2, notifies clinic |
 | 4 | "Will a stone float on water?" (rotates with two other plain logic questions) | yesno | daily | wrong answer | logged; notifies clinic with any other trip |
 | 5 | "Did you sleep through the night?" | yesno | forDays: 7 | no, three nights running | notifies family |
 | 6 | "What have you been up to today?" | text | daily | coherence rating below baseline | logged; the language signal, never shown to the person |
@@ -231,7 +231,16 @@ reusing the robust baseline from 0002 for `changeFromBaseline`. The
 plain-language check is a word list plus a sentence-length and question-mark
 check — deliberately dumb, easy for a clinician to understand and argue with.
 
-**Learned while building.** The plain-language check earns its place
+**Learned while building.** The five-of-seven threshold on the days-backwards
+item is my choice, not a validated cut-point: the 4AT bands months-backwards
+at nought, one, and two-or-more errors, and five of seven sits a little more
+lenient than its worst band. It also remains an absolute floor, while this
+doc's own rule table offers `changeFromBaseline` — the person who has always
+managed four is flagged daily and the person who drops from seven to five is
+not flagged at all. Reading the answer with a model (0006) removed the
+spelling problem but not this one.
+
+The plain-language check earns its place
 immediately: "Assess dyspnoea and peripheral oedema" is refused on three
 counts at once (three clinical words, no question mark, reads as a task), and
 "Take an extra water tablet today?" is refused as an instruction even though
