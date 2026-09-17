@@ -104,10 +104,7 @@ export function runChat(ui, ctx) {
         { label: 'Skip', kind: 'secondary', onClick: () => { if (!busy) finishItem(it, { skipped: true }); } },
         { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
       ], { row: true });   // stacked, this footer is 80px the writing box needs
-      ta.addEventListener('input', () => {
-        ui.setDisabled('send', !ta.value.trim() || busy);
-        hint.hidden = !!ta.value.trim();
-      });
+      ta.addEventListener('input', () => ui.setDisabled('send', !ta.value.trim() || busy));
       // No autofocus. Focusing the box scrolls it into view, which undoes the
       // anchor on the question and leaves her answering something she has not
       // read; on a phone it also throws the keyboard up over half the screen
@@ -197,10 +194,7 @@ export function runChat(ui, ctx) {
               rating: it.kind === 'text' && it.rated ? heuristicRating(v) : null, ratingSource: 'heuristic' });
           } }
       ], { row: true });
-      ta.addEventListener('input', () => {
-        ui.setDisabled('send', !ta.value.trim());
-        hint.hidden = !!ta.value.trim();
-      });
+      ta.addEventListener('input', () => ui.setDisabled('send', !ta.value.trim()));
       // No autofocus. Focusing the box scrolls it into view, which undoes the
       // anchor on the question and leaves her answering something she has not
       // read; on a phone it also throws the keyboard up over half the screen
