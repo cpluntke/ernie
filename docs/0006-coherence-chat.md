@@ -289,6 +289,7 @@ Newest first. Record what changed and why, so the doc stays a living record.
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-09-17 | Fixed: the Answers and Language tabs went blank once the person tapped Carry on, because leaving the chat screen cleared the session the backend read from. The backend now keeps today's chat, and restores it after a reload | Owner found it while trying the prototype |
 | 2026-09-17 | Built and linked. Fallback rating recalibrated after it scored ordinary disfluency as severe; delirium items deliberately say nothing back to the person | Testing the prototype |
 | 2026-09-17 | Filled in properly: runbook delivery, ten heuristics, model rating with a heuristic fallback, fixed cognitive probes | Owner asked for the coherence chat as the glue, carrying clinician-entered items |
 | 2026-09-13 | Created as a placeholder | Owner asked to add it to the list without details yet |

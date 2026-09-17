@@ -329,7 +329,7 @@
   }
 
   // ------------------------------------------------------------------ state
-  var log = [], chat = null, current = 'invite';
+  var log = [], chat = null, lastChat = null, current = 'invite';
   var history = [];   // previous days, for changeFromYesterday / baseline
   try { history = JSON.parse(localStorage.getItem('ernie-chat-history') || '[]'); if (!Array.isArray(history)) history = []; } catch (e) { history = []; }
   function saveHistory() { try { localStorage.setItem('ernie-chat-history', JSON.stringify(history.slice(-30))); } catch (e) {} }
@@ -582,8 +582,10 @@
     var told = chat.items.filter(function (a) { return a.told; });
     $('done-text').textContent = told.length ? 'Thank you, ' + PERSON + '. ' + told[0].told : 'Thank you, ' + PERSON + '. I will see you tomorrow.';
     $('done-transcript').innerHTML = transcriptHtml(chat.items);
-    history.push({ at: new Date().toISOString(), script: scriptKey, items: chat.items.map(function (a) { return { itemId: a.itemId, answer: a.answer, skipped: a.skipped }; }) });
+    history.push({ at: new Date().toISOString(), script: scriptKey, durationMs: chat.durationMs,
+                   ratingSource: chat.ratingSource, items: chat.items });
     saveHistory();
+    lastChat = chat;              // the backend keeps showing today's chat after the person moves on
     show('done');
   }
 
@@ -634,9 +636,12 @@
           + (it.note ? '<div class="item__meta">' + esc(it.note) + '</div>' : '')
           + '</div>';
       }).join('');
-      // answers
-      var items = chat ? chat.items : [];
-      $('be-answers').innerHTML = items.length ? items.map(function (a) {
+      // answers: the live chat, or the last one today once the person has moved on
+      var session = chat || lastChat;
+      var items = session ? session.items : [];
+      $('be-answers').innerHTML = items.length ? ('<p class="note" style="margin:0 0 0.5rem">'
+        + (chat && !chat.completed ? 'In progress.' : 'Finished.') + ' ' + items.length + ' asked, '
+        + items.filter(function (a) { return a.tripped; }).length + ' flagged.</p>') + items.map(function (a) {
         return '<div class="item"><div class="item__row"><span class="item__q">' + esc(a.question) + '</span>'
           + '<span class="chip ' + (a.tripped ? 'chip--trip' : 'chip--ok') + '">' + (a.tripped ? 'flag' : a.skipped ? 'skipped' : 'ok') + '</span></div>'
           + '<div class="item__meta">' + (a.skipped ? '<em>skipped</em>' : esc(String(a.answer) + (a.unit ? ' ' + a.unit : ''))) + (a.score != null ? ' · ' + a.score + ' in sequence' : '') + ' · answered in ' + (a.latencyMs / 1000).toFixed(1) + ' s</div>'
@@ -679,11 +684,11 @@
       }).join('') || '<li>No events yet.</li>';
       var last = log[log.length - 1];
       $('be-payload').textContent = last ? JSON.stringify({ id: 'evt_' + log.length.toString(36), task: 'chat', kind: 'chat.' + last.kind, t: last.t - log[0].t, payload: (function () { var o = {}; for (var k in last) if (k !== 't' && k !== 'kind' && last[k] !== undefined) o[k] = last[k]; return o; })() }, null, 1) : '{}';
-      $('be-observation').textContent = chat ? JSON.stringify({
+      $('be-observation').textContent = session ? JSON.stringify({
         task: 'chat', day: new Date().toISOString().slice(0, 10), script: scriptKey, methodVersion: 1,
-        completed: !!chat.completed, durationMs: chat.durationMs || Math.round(now() - chat.startedAt),
-        items: chat.items.map(function (a) { return { itemId: a.itemId, answered: !a.skipped, latencyMs: a.latencyMs, tripped: a.tripped, score: a.score, rating: a.rating || null }; }),
-        language: { ratingSource: chat.ratingSource || 'pending', words: h.words, ttr: h.ttr == null ? null : +h.ttr.toFixed(3), meanWordLength: h.meanWordLength == null ? null : +h.meanWordLength.toFixed(2), markers: h.markers, repeats: h.repeats },
+        completed: !!session.completed, durationMs: session.durationMs || (session.startedAt ? Math.round(now() - session.startedAt) : null),
+        items: items.map(function (a) { return { itemId: a.itemId, answered: !a.skipped, latencyMs: a.latencyMs, tripped: a.tripped, score: a.score, rating: a.rating || null }; }),
+        language: { ratingSource: session.ratingSource || 'pending', words: h.words, ttr: h.ttr == null ? null : +h.ttr.toFixed(3), meanWordLength: h.meanWordLength == null ? null : +h.meanWordLength.toFixed(2), markers: h.markers, repeats: h.repeats },
         freeText: '[kept on the record, not on events — see 0006 section 6.3]'
       }, null, 1) : '{}';
     }
@@ -705,7 +710,7 @@
     var b = ev.target.closest('button[data-script]'); if (!b) return;
     scriptKey = b.getAttribute('data-script');
     runbook = clone(SCRIPTS[scriptKey].items);
-    chat = null; show('invite'); backend.render();
+    chat = null; lastChat = null; show('invite'); backend.render();
   });
   $('item-list').addEventListener('click', function (ev) {
     var b = ev.target.closest('button[data-toggle]'); if (!b) return;
@@ -736,6 +741,13 @@
     refreshInvite(); backend.render();
   });
 
+  (function restoreToday() {
+    var last = history[history.length - 1];
+    if (last && String(last.at).slice(0, 10) === new Date().toISOString().slice(0, 10)
+        && last.script === scriptKey && last.items && last.items.length && last.items[0].question) {
+      lastChat = { items: last.items, script: last.script, completed: true, durationMs: last.durationMs, ratingSource: last.ratingSource, startedAt: null };
+    }
+  })();
   show('invite');
   if (window.innerWidth > 980) backend.toggle(true);
 })();
