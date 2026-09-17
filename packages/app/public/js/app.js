@@ -66,7 +66,12 @@ const ui = {
       // never actually shown — anchor on the pair, unless they do not fit.
       const saids = w.querySelectorAll('.said');
       const said = saids[saids.length - 1];
-      const pairFits = said && (ask.offsetTop + ask.offsetHeight - said.offsetTop) <= w.clientHeight - 16;
+      // Measured to the bottom of the answers, not the bottom of the question:
+      // fitting the question said nothing about whether the last option fits,
+      // and a half-visible last option reads as "the list ends here".
+      const area = bodyEl.querySelector('#answer-area');
+      const tail = area ? area.offsetTop + area.offsetHeight : ask.offsetTop + ask.offsetHeight;
+      const pairFits = said && (tail - said.offsetTop) <= w.clientHeight - 16;
       const anchorEl = pairFits ? said : ask;
       // A short question with little under it cannot reach the top, because the
       // container has nothing left to scroll against — so she reads the
