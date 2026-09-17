@@ -322,8 +322,9 @@ export function runSignature(ui, ctx) {
       const records = store.add(rec);
       rec.deviation = bl ? deviation(rec, bl, ctx.person) : null;
       events.push('signature', 'complete', { signing: records.length, baselineReady: !!bl });
-      ui.title(`Thank you, ${ctx.person}.`);
-      const body = el('div');
+      ui.title(`Thank you, ${ctx.person}.`, { compact: true });
+      ui.fixed(true);          // the page is the screen; it never sits below a fold
+      const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
       el('div', { class: 'notice notice--success', role: 'status',
         html: '<span class="notice__icon" aria-hidden="true">✓</span><div><p class="notice__title">Done</p><p>Lovely to see you. Here is your page in the book.</p></div>' }, body);
       const page = el('div', { class: 'page' }, body);

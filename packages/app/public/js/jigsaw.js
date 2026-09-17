@@ -7,7 +7,7 @@ import { svg, el, now, events, mean, median } from './core.js';
 const PIC_W = 1200, PIC_H = 900;
 // Shallower tabs than a printed jigsaw: a deep tab eats into the neighbour's
 // square middle, and that middle is the part a shaky finger can actually hit.
-const TAB_SCALE = 0.8;
+const TAB_SCALE = 0.35;
 const PARTNER = 'Anna';
 const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -314,6 +314,14 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       if (inPicture(pt.x, pt.y)) placeChosen();
       else instruction.textContent = 'Tap inside the dotted square to put it in.';
     });
+    // A tap that lands in the gap between two pieces: silence there reads as
+    // "I have broken it", and this is the commonest miss.
+    board.addEventListener('click', (ev) => {
+      if (swallowClick || finished || chosen) return;
+      if (ev.target.closest && ev.target.closest('.piece')) return;
+      const pt = svgPoint(ev);
+      if (!inPicture(pt.x, pt.y)) instruction.textContent = 'That was a gap. Tap the middle of a piece.';
+    });
 
     function snap(cl, dragged) {
       let snapped = false;
@@ -425,7 +433,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       const o = p.node.querySelector('.piece__outline');
       o.setAttribute('stroke', '#1e40af'); o.setAttribute('stroke-width', '8');
       o.setAttribute('stroke-dasharray', '40 22');   // not colour alone
-      instruction.textContent = 'The outlined piece goes in the outlined spot.';
+      instruction.textContent = 'The piece with the dashed edge goes in the blue shape.';
       rec('hint', { piece: p.i });
     }
     function hideHint() {

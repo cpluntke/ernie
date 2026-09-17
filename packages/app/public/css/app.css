@@ -130,7 +130,7 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 
 /* progress through the visit, in words */
 .steps { margin: 0 0 var(--ernie-space-2); }
-.steps__label { font-weight: 700; margin: 0 0 var(--ernie-space-1); font-size: 1rem; color: var(--ernie-ink-soft); }
+.steps__label { font-weight: 700; margin: 0 0 var(--ernie-space-1); font-size: 1.125rem; color: var(--ernie-ink-soft); }
 .steps__track { display: flex; gap: var(--ernie-space-1); }
 .steps__seg { flex: 1; height: 0.6rem; border-radius: 0.3rem; background: var(--ernie-surface); border: 2px solid var(--ernie-border); }
 .steps__seg--done { background: var(--ernie-primary); border-color: var(--ernie-primary); }
@@ -178,19 +178,27 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .pad-line { position: absolute; left: 8%; right: 8%; bottom: 26%; border-top: 2px solid var(--ernie-border); pointer-events: none; }
 .pad-x { position: absolute; left: 3%; bottom: 24%; font-size: 1.5rem; color: var(--ernie-ink-soft); pointer-events: none; }
 .pad-hint { position: absolute; left: 0; right: 0; top: 40%; text-align: center; color: var(--ernie-ink-soft); font-size: var(--ernie-text-lg); pointer-events: none; }
-.page { border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: #fffdf7; padding: var(--ernie-space-2); margin: 0 0 var(--ernie-space-3); }
-.page svg { display: block; width: 100%; height: auto; max-height: 30vh; }
+/* The card scales to the room it has rather than running past the footer: this
+   screen's whole promise is showing the page, so the page has to be on it. */
+.page {
+  border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: #fffdf7;
+  padding: var(--ernie-space-2); margin: 0; display: flex; flex-direction: column;
+  flex: 1 1 auto; min-height: 0;
+}
+.page svg { display: block; width: 100%; flex: 1 1 auto; min-height: 3rem; }
 .page__date { margin: 0 0 var(--ernie-space-1); font-weight: 700; }
 
 /* ---------------------------------------------------------------- chat */
 .said { margin: 0 0 var(--ernie-space-2); }
-.said__who { font-size: 1rem; font-weight: 700; color: var(--ernie-ink-soft); margin: 0 0 0.25rem; }
+.said__who { font-size: 1.125rem; font-weight: 700; color: var(--ernie-ink-soft); margin: 0 0 0.25rem; }
 .said__what { margin: 0; padding: var(--ernie-space-2); border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: var(--ernie-paper); }
 .said--you .said__what { background: var(--ernie-selected); border-color: var(--ernie-primary); }
 .said--skipped .said__what { color: var(--ernie-ink-soft); }
 .ask { font-size: var(--ernie-text-lg); font-weight: 700; margin: var(--ernie-space-2) 0 var(--ernie-space-2); }
 @media (max-height: 700px) {
-  textarea.say { min-height: 3.5rem; max-height: 4.5rem; }
+  textarea.say { min-height: 4.5rem; max-height: 4.5rem; }
+  /* Only the last exchange stays: the rest is history, and the box is not. */
+  .said:not(:nth-last-of-type(-n+2)) { display: none; }
 }
 textarea.say {
   width: 100%; min-height: 6.5rem; padding: var(--ernie-space-2); font-size: var(--ernie-text-lg);
@@ -266,7 +274,12 @@ textarea.say {
   /* The question, the writing box and the line that says why the button is
      grey all have to be on screen together in 200px of card. */
   .ask { font-size: var(--ernie-text); margin-block: var(--ernie-space-1); }
-  textarea.say { min-height: 3rem; max-height: 3rem; }
+  /* The success banner is confirmation, the page below it is the point. */
+  .notice { padding: var(--ernie-space-1); gap: var(--ernie-space-1); }
+  .notice__icon { font-size: var(--ernie-text); }
+  .page { padding: var(--ernie-space-1); }
+  .page svg { min-height: 2rem; }
+  textarea.say { min-height: 4rem; max-height: 4rem; }
 }
 @media (max-height: 660px) and (min-width: 480px) {
   .answers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
