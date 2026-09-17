@@ -69,7 +69,25 @@ const ui = {
       if (a.id) buttons.set(a.id, b);
     }
   },
-  setDisabled(id, on) { const b = buttons.get(id); if (b) b.disabled = !!on; }
+  setDisabled(id, on) { const b = buttons.get(id); if (b) b.disabled = !!on; },
+  // The only question the app asks over the top of a screen. It never replaces
+  // the screen, because saying no has to put them back exactly where they were
+  // and none of the flows can be rewound.
+  confirm({ title, body, no = 'No, go back', yes, onYes }) {
+    if (document.getElementById('confirm')) return;
+    const close = () => { const d = document.getElementById('confirm'); if (d) d.remove(); };
+    const sheet = el('div', { class: 'confirm__sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'confirm-title' });
+    el('h2', { id: 'confirm-title', class: 'confirm__title', text: title }, sheet);
+    el('p', { class: 'text text--large', text: body }, sheet);
+    const row = el('div', { class: 'confirm__actions' }, sheet);
+    const cancel = el('button', { type: 'button', class: 'btn btn--secondary btn--full', text: no, onclick: close }, row);
+    el('button', { type: 'button', class: 'btn btn--full', text: yes, onclick: () => { close(); onYes(); } }, row);
+    const back = el('div', { id: 'confirm', class: 'confirm', onclick: (ev) => { if (ev.target.id === 'confirm') close(); } });
+    back.appendChild(sheet);
+    back.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') close(); });
+    document.querySelector('.app').appendChild(back);
+    cancel.focus();
+  }
 };
 
 function say(title, paragraphs, actions, stepIndex) {
@@ -85,28 +103,17 @@ function say(title, paragraphs, actions, stepIndex) {
 
 // Starting over destroys the signature and every answer given today, and the
 // button sits where a hesitant person taps first, so it asks before it does it.
-// The question sits over the screen rather than replacing it: saying no has to
-// put them back exactly where they were, and the flow cannot be rewound.
 function confirmRestart() {
   // Not "has the visit finished a step" but "has she done anything at all":
   // the likeliest accidental tap is mid-signature, before any step resolves.
   const doneSomething = events.list.some((e) => !(e.activity === 'visit' && e.kind === 'started')
     && !(e.activity === 'signature' && e.kind === 'shown'));
   if (!doneSomething) return visitFlow();
-  if (document.getElementById('confirm')) return;
-  const close = () => { const d = document.getElementById('confirm'); if (d) d.remove(); };
-  const sheet = el('div', { class: 'confirm__sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'confirm-title' });
-  el('h2', { id: 'confirm-title', class: 'confirm__title', text: 'Start the whole visit over?' }, sheet);
-  el('p', { class: 'text text--large', text: 'Your signature and your answers today will be thrown away.' }, sheet);
-  const row = el('div', { class: 'confirm__actions' }, sheet);
-  const no = el('button', { type: 'button', class: 'btn btn--secondary btn--full', text: 'No, stay here', onclick: close }, row);
-  el('button', { type: 'button', class: 'btn btn--full', text: 'Yes, start over',
-    onclick: () => { close(); visitFlow(); } }, row);
-  const back = el('div', { id: 'confirm', class: 'confirm', onclick: (ev) => { if (ev.target.id === 'confirm') close(); } });
-  back.appendChild(sheet);
-  back.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') close(); });
-  document.querySelector('.app').appendChild(back);
-  no.focus();
+  ui.confirm({
+    title: 'Start the whole visit over?',
+    body: 'Your signature and your answers today will be thrown away.',
+    no: 'No, stay here', yes: 'Yes, start over', onYes: () => visitFlow()
+  });
 }
 
 // --------------------------------------------------------------- the visit
@@ -174,6 +181,7 @@ function farewell() {
     puzzle: visit.jigsaw ? (visit.jigsaw.abandoned ? 'left' : 'finished') : 'skipped'
   });
   ui.fixed(false);
+  ui.topbarAction(null);        // the puzzle's "Stop the puzzle" does not outlive it
   ui.steps(3);
   ui.title(`Goodbye, ${PERSON}.`);
   const body = el('div');

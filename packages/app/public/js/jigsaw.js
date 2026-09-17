@@ -52,9 +52,12 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
     // scaled to fit the screen, so every unit of padding shrinks the pieces.
     const M = Math.round(0.12 * s) + 8;
     const trayTop = M + PIC_H + Math.round(0.18 * s);
-    const PITCH = 0.72;
+    // Tray spacing. Only the vertical pitch feeds H, and the board is scaled to
+    // fit its box, so spreading sideways separates the pieces for nothing while
+    // a taller tray would cost piece size everywhere.
+    const PITCH_X = 0.95, PITCH_Y = 1.05;
     const W = PIC_W + 2 * M;
-    const H = trayTop + (Math.ceil(count / cols) - 1) * ch * PITCH + ch + M;
+    const H = trayTop + (Math.ceil(count / cols) - 1) * ch * PITCH_Y + ch + M;
     const R = 0.45 * s;                       // magnetic radius, generous on purpose
     const rand = rng(seed);
 
@@ -144,13 +147,15 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       const p = pieces[pi];
       const jitter = () => (rand() - 0.5) * 0.08 * s;
       makeCluster([p],
-        M + (n % cols) * cw * PITCH + 0.05 * cw - p.col * cw + jitter(),
-        trayTop + Math.floor(n / cols) * ch * PITCH - p.row * ch + jitter(), false);
+        M + (n % cols) * cw * PITCH_X + 0.05 * cw - p.col * cw + jitter(),
+        trayTop + Math.floor(n / cols) * ch * PITCH_Y - p.row * ch + jitter(), false);
     });
 
-    const baseInstruction = () => (withPartner
-      ? `Tap a piece, then tap the picture. ${PARTNER} will help.`
-      : 'Tap a piece, then tap the picture. You can drag them too.');
+    // One line, kept short on purpose: a second line here costs the board ~36px,
+    // which is the difference between a 60px and a 54px piece at 13 inches.
+    // Dragging still works and is discovered by trying; the partner is named in
+    // the top bar's count line rather than here.
+    const baseInstruction = () => 'Tap a piece, then tap the picture.';
     instruction.textContent = baseInstruction();
 
     // --- dragging
@@ -249,6 +254,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       rec('tapPlace', { piece: p.i, pieces: cl.pieces.length });
       setT(cl, M, M);
       snap(cl, p);
+      if (!hintPiece && !finished) instruction.textContent = baseInstruction();
     }
     // Taps that land on a piece are handled above; this is the picture itself,
     // and locked pieces sitting on it, which never start a drag.
@@ -383,6 +389,16 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       const who = withPartner ? (partner.here ? ` · ${PARTNER} is here` : ` · Waiting for ${PARTNER}`) : '';
       ui.topbarNote((left === 0 ? 'All in place.' : left === 1 ? '1 piece left' : `${left} pieces left`) + who);
     }
+    // Stopping puts every placed piece back, so it asks once anything is placed,
+    // the same way leaving the whole visit does.
+    function askToLeave() {
+      if (finished) return;
+      if (!lockedCount()) return leave();
+      ui.confirm({
+        title: 'Stop the puzzle?', body: 'The pieces you have placed will be put back.',
+        no: 'No, keep playing', yes: 'Yes, stop', onYes: leave
+      });
+    }
     function leave() {
       if (finished) return;
       finished = true; partnerStop();
@@ -407,8 +423,10 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       resolve(game);
     }
 
-    ui.topbarAction({ label: 'Stop the puzzle', onClick: leave });
-    ui.actions([{ label: 'Show me a piece and where it goes', kind: 'secondary', onClick: showHint }]);
+    ui.topbarAction({ label: 'Stop the puzzle', onClick: askToLeave });
+    // One line: this button wrapping to two costs the board 55px, and the board
+    // is where the tappable targets are.
+    ui.actions([{ label: 'Help me with a piece', kind: 'secondary', onClick: showHint }]);
     updateStatus();
     rec('shown', { pieces: count, withPartner });
     if (withPartner) partnerStart();

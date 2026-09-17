@@ -89,13 +89,17 @@ export function runChat(ui, ctx) {
       }
       const ta = el('textarea', { class: 'say', id: 'say', 'aria-label': it.question }, area);
       if (it.kind === 'number') { ta.setAttribute('inputmode', 'decimal'); ta.style.minHeight = '5rem'; }
+      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, area);
       const T = trackTyping(ta);
       pending.typing = T;
       ui.actions([
         { label: 'Skip this one', kind: 'secondary', onClick: () => { if (!busy) finishItem(it, { skipped: true }); } },
-        { id: 'send', label: 'Send', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
+        { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => { if (!busy) send(it, ta.value.trim(), false); } }
       ]);
-      ta.addEventListener('input', () => ui.setDisabled('send', !ta.value.trim() || busy));
+      ta.addEventListener('input', () => {
+        ui.setDisabled('send', !ta.value.trim() || busy);
+        hint.hidden = !!ta.value.trim();
+      });
       setTimeout(() => ta.focus(), 0);
     }
 
@@ -166,16 +170,20 @@ export function runChat(ui, ctx) {
         return;
       }
       const ta = el('textarea', { class: 'say', id: 'say', 'aria-label': it.question }, area);
+      const hint = el('p', { class: 'text text--soft', text: 'Type your answer, then tap Send my answer.' }, area);
       pending.typing = trackTyping(ta);
       ui.actions([
         { label: 'Skip this one', kind: 'secondary', onClick: () => finishItem(it, { skipped: true }) },
-        { id: 'send', label: 'Done', kind: 'huge', disabled: true, onClick: () => {
+        { id: 'send', label: 'Send my answer', kind: 'huge', disabled: true, onClick: () => {
             const v = ta.value.trim();
             finishItem(it, { said: v, value: v, score: it.id === 'd-back' ? scoreDaysBackwards(v) : null,
               rating: it.kind === 'text' && it.rated ? heuristicRating(v) : null, ratingSource: 'heuristic' });
           } }
       ]);
-      ta.addEventListener('input', () => ui.setDisabled('send', !ta.value.trim()));
+      ta.addEventListener('input', () => {
+        ui.setDisabled('send', !ta.value.trim());
+        hint.hidden = !!ta.value.trim();
+      });
       setTimeout(() => ta.focus(), 0);
     }
 
