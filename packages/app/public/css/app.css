@@ -100,7 +100,7 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .text--soft { color: var(--ernie-ink-soft); }
 .actions { flex: 0 0 auto; background: var(--ernie-paper); border-top: 2px solid var(--ernie-border); padding: var(--ernie-space-2); }
 .actions[hidden] { display: none; }
-.actions__inner { max-width: var(--ernie-measure); margin: 0 auto; display: flex; flex-direction: column; gap: var(--ernie-space-2); }
+.actions__inner { max-width: var(--ernie-measure); margin: 0 auto; display: flex; flex-direction: column; gap: 0.75rem; }
 /* Two buttons on one line, used where the screen's own thing needs the height.
    The main one keeps twice the width so it never reads as the lesser choice. */
 .actions__inner--row { flex-direction: row; align-items: stretch; }
@@ -191,8 +191,13 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 /* ---------------------------------------------------------------- chat */
 .said { margin: 0 0 var(--ernie-space-2); }
 .said__who { font-size: 1.125rem; font-weight: 700; color: var(--ernie-ink-soft); margin: 0 0 0.25rem; }
-.said__what { margin: 0; padding: var(--ernie-space-2); border: 3px solid var(--ernie-border); border-radius: var(--ernie-radius); background: var(--ernie-paper); }
-.said--you .said__what { background: var(--ernie-selected); border-color: var(--ernie-primary); }
+/* A quote, not a control: the button shape belongs to .btn and .answer alone,
+   or the record of what was already said invites another tap. */
+.said__what {
+  margin: 0; padding: 0 0 0 var(--ernie-space-2); border: 0;
+  border-left: 4px solid var(--ernie-border); border-radius: 0; background: transparent;
+}
+.said--you .said__what { border-left-color: var(--ernie-primary); }
 .said--skipped .said__what { color: var(--ernie-ink-soft); }
 .ask { font-size: var(--ernie-text-lg); font-weight: 700; margin: var(--ernie-space-2) 0 var(--ernie-space-2); }
 @media (max-height: 700px) {
@@ -254,6 +259,9 @@ textarea.say {
 @media (max-height: 660px) {
   .steps__track { display: none; }
   .steps__label { margin: 0; }
+  .actions { padding: var(--ernie-space-1); }
+  .actions__inner { gap: var(--ernie-space-1); }
+  .btn { padding-block: var(--ernie-space-1); }
   .demo-strip { display: none; }          /* demo chrome, not the app */
   h1 { font-size: var(--ernie-heading-2); margin-bottom: var(--ernie-space-1); }
   .body { padding-block: var(--ernie-space-1); }

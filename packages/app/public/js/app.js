@@ -44,7 +44,10 @@ const ui = {
     s.textContent = text || '';
     s.className = 'topbar__spacer' + (text ? ' topbar__spacer--note' : '');
   },
-  body(node) { bodyEl.innerHTML = ''; if (node) bodyEl.appendChild(node); },
+  // Every screen starts at its own top. Without this a screen inherits the
+  // last one's scroll offset and can open below its own heading — the puzzle
+  // offer arrived showing three buttons and no question.
+  body(node) { bodyEl.innerHTML = ''; if (node) bodyEl.appendChild(node); $('body-wrap').scrollTop = 0; },
   fixed(on) { $('body-wrap').classList.toggle('body--fixed', !!on); },
   scrollEnd() { const w = $('body-wrap'); w.scrollTop = w.scrollHeight; },
   // Scrolling to the bottom of a transcript pushes the question itself off the
@@ -61,6 +64,11 @@ const ui = {
   steps(index) {
     if (index == null) { stepsEl.hidden = true; return; }
     stepsEl.hidden = false;
+    // Too short to show the step line at all: the top bar's empty half carries
+    // it instead, which costs no height.
+    if (window.matchMedia && window.matchMedia('(max-height: 560px)').matches) {
+      ui.topbarNote(`Step ${index + 1} of ${STEPS.length}`);
+    }
     stepsEl.innerHTML = `<p class="steps__label">Step ${index + 1} of ${STEPS.length}: ${esc(STEPS[index])}</p>`
       + `<div class="steps__track" aria-hidden="true">${STEPS.map((s, i) => `<span class="steps__seg${i <= index ? ' steps__seg--done' : ''}"></span>`).join('')}</div>`;
   },
@@ -165,7 +173,7 @@ async function visitFlow() {
   // 3. a puzzle
   const played = await new Promise((resolve) => {
     say('Would you like to do a puzzle before you go?', [
-      { text: 'A picture in a few big pieces. There is no hurry, and you can stop at any time.', large: true }
+      { text: 'A picture in a few big pieces. You can stop at any time.', large: true }
     ], [
       { label: 'Not today, thank you', kind: 'secondary', onClick: () => { events.push('jigsaw', 'declined', {}); resolve(null); } },
       { label: 'Ask Anna to join me', kind: 'secondary', onClick: () => resolve({ withPartner: true }) },
