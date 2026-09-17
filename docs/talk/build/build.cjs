@@ -146,9 +146,9 @@ const phone = (s, file, x, y, h) => {
   T(s, 'ux-critic', { x: 0.8, y: 4.1, w: 1.5, h: 0.4, fontSize: 16, bold: true, color: BLUE });
   T(s, 'Runs before every pull request. Drives the real page, checks it against the 80+ checklist, and blocks anything an 84-year-old could not use.', { x: 2.3, y: 4.08, w: 6.9, h: 0.75, fontSize: 11.5, color: INK });
   arrow(s, 8.1, Y + H + 0.02, 8.1, 3.98, BLUE);
-  arrow(s, 1.6, 3.98, 1.6, Y + H + 0.02, BLUE);
+  arrow(s, 5.5, 3.98, 5.5, Y + H + 0.02, BLUE);
   T(s, 'audits', { x: 8.2, y: 3.72, w: 0.8, h: 0.2, fontSize: 8, color: BLUE });
-  T(s, 'fixes', { x: 1.7, y: 3.72, w: 0.8, h: 0.2, fontSize: 8, color: BLUE });
+  T(s, 'fixes', { x: 5.6, y: 3.72, w: 0.8, h: 0.2, fontSize: 8, color: BLUE });
   foot(s, 'All of it is in the repository.');
   s.addNotes('4:05. Built as a pipeline, not a one-off. A research agent produced the insight map and the 80+ criteria. Nine sketches on one doc template, product and engineering together. A component kit with the criteria baked in, synced to Claude Design. One small web service; Claude reads her replies as data and never advises. And a reviewer in the loop: before any UI change merges, a senior-centred critic drives the real page and blocks anything an 84-year-old could not use.');
 }
