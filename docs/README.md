@@ -58,6 +58,13 @@ python3 .claude/skills/design-doc/scripts/new_doc.py "Short title" --owner @you
 - **Open questions are first-class.** Anything unresolved goes in Open
   questions with an owner. Resolving one moves it to the Decision log.
 
+## The runnable prototype
+
+`packages/app` stitches the selected sketches into one daily visit: sign the
+guest book, a short chat from the clinician's runbook, then a puzzle. It is a
+single Node process serving a no-build browser app, deployed on Render from
+the `Dockerfile` at the repository root. See `packages/app/README.md`.
+
 ## Index
 
 | # | Doc | Phase | Status |

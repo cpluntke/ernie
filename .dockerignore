@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+**/node_modules
+docs
+tools
+.claude
+.design-sync
+packages/ernie-ui
+ux-audit-out
+*.log
