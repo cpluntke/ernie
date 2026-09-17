@@ -121,7 +121,15 @@ async function interpret(payload) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  // A malformed request line or Host header must never reach the handler: an
+  // unhandled rejection here exits the process, and there is no supervisor.
+  let url;
+  try {
+    url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  } catch {
+    res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+    return res.end('Bad request');
+  }
 
   if (url.pathname === '/healthz') return json(res, 200, { ok: true });
 
@@ -158,7 +166,13 @@ const server = http.createServer(async (req, res) => {
 
   // ---- static
   if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { error: 'GET only' });
-  let rel = decodeURIComponent(url.pathname);
+  let rel;
+  try {
+    rel = decodeURIComponent(url.pathname);
+  } catch {
+    res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+    return res.end('Bad request');
+  }
   if (rel === '/' || rel.endsWith('/')) rel += 'index.html';
   const file = path.join(PUBLIC, path.normalize(rel).replace(/^(\.\.[/\\])+/, ''));
   if (!file.startsWith(PUBLIC) || !existsSync(file) || !statSync(file).isFile()) {

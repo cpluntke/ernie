@@ -109,9 +109,18 @@ export const FEATS = [
   { k: 'shapeDistance', label: 'Shape distance', unit: '', worse: 'up', word: 'a different shape', other: 'closer to usual' }
 ];
 
+const KEEP = 40;
 export const store = {
   all() { return load('signatures', []); },
-  add(rec) { const a = this.all(); a.push(rec); save('signatures', a.slice(-60)); return a; },
+  add(rec) {
+    const a = this.all();
+    a.push(rec);
+    // Trim from the middle, never the front: the baseline is the FIRST BASE_N
+    // records, so dropping the oldest would silently move it to a later set.
+    const kept = a.length > KEEP ? [...a.slice(0, BASE_N), ...a.slice(-(KEEP - BASE_N))] : a;
+    save('signatures', kept);
+    return kept;
+  },
   clear() { save('signatures', []); }
 };
 
@@ -262,6 +271,7 @@ export function runSignature(ui, ctx) {
               rec.padWidth = Math.round(padW);
               rec.features = signatureFeatures(sig.strokes, sig.shownAt);
               rec.shape = rec.features.shape;
+              delete rec.features.speedSeries;   // large, and nothing reads it back
               rec.strokes = sig.strokes.map((s) => s.map((p) => [+p.x.toFixed(4), +p.y.toFixed(4), p.t - sig.shownAt]));
               events.push('signature', 'done', { strokes: rec.features.strokes, totalMs: Math.round(rec.features.totalMs) });
               askForDate();
@@ -296,10 +306,12 @@ export function runSignature(ui, ctx) {
 
     // ---- screen 3: your page in the book
     function thankYou() {
+      // Built from earlier days only: a signature inside its own baseline pulls
+      // every z toward zero, which is exactly when a bad day would be missed.
+      const bl = baseline(store.all());
       const records = store.add(rec);
-      const bl = baseline(records.slice(0, -1).length >= BASE_N ? records.slice(0, -1) : records);
-      rec.deviation = deviation(rec, baseline(records), ctx.person);
-      events.push('signature', 'complete', { signing: records.length, baselineReady: !!baseline(records) });
+      rec.deviation = bl ? deviation(rec, bl, ctx.person) : null;
+      events.push('signature', 'complete', { signing: records.length, baselineReady: !!bl });
       ui.title(`Thank you, ${ctx.person}.`);
       const body = el('div');
       el('div', { class: 'notice notice--success', role: 'status',

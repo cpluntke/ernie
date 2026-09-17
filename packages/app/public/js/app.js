@@ -60,7 +60,10 @@ function say(title, paragraphs, actions, stepIndex) {
 }
 
 // --------------------------------------------------------------- the visit
+let flowId = 0;
 async function visitFlow() {
+  const mine = ++flowId;
+  const current = () => mine === flowId;
   cleanup();
   events.reset();
   visit.signature = visit.chat = visit.jigsaw = null;
@@ -69,6 +72,7 @@ async function visitFlow() {
   // 1. sign in
   ui.steps(0);
   visit.signature = await runSignature(ui, ctx);
+  if (!current()) return;
   backend.schedule();
 
   // 2. the chat
@@ -82,12 +86,13 @@ async function visitFlow() {
       { label: 'Yes, go ahead', kind: 'huge', onClick: () => resolve(true) }
     ], 1);
   }).then(async (yes) => {
-    if (!yes || !due) return;
+    if (!yes || !due || !current()) return;
     ui.steps(1);
     ui.title('');
     visit.chat = await runChat(ui, ctx);
     backend.schedule();
   });
+  if (!current()) return;
 
   // 3. a puzzle
   const played = await new Promise((resolve) => {
@@ -99,9 +104,11 @@ async function visitFlow() {
       { label: 'Yes, on my own', kind: 'huge', onClick: () => resolve({ withPartner: false }) }
     ], 2);
   });
+  if (!current()) return;
   if (played) {
     ui.steps(2);
     visit.jigsaw = await runJigsaw(ui, ctx, { pieces: 12, withPartner: played.withPartner });
+    if (!current()) return;
     backend.schedule();
   }
 

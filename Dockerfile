@@ -6,8 +6,10 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 # Dependencies first, so a change to the app does not reinstall them.
-COPY packages/app/package.json ./package.json
-RUN npm install --omit=dev --no-audit --no-fund
+# npm ci against the lockfile: floating transitive versions are how the zod
+# peer-dependency gap shipped a green deploy with the chat quietly degraded.
+COPY packages/app/package.json packages/app/package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
 
 COPY packages/app/server.mjs ./server.mjs
 COPY packages/app/public ./public

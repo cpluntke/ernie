@@ -101,11 +101,12 @@ export function mountBackend(visit) {
     else {
       out.push(`<p class="note" style="margin:0 0 0.5rem">${chat.completed ? 'Finished.' : 'In progress.'} ${chat.items.length} asked, ${chat.items.filter((a) => a.tripped).length} flagged · read by ${chat.mode === 'conversation' ? 'a model' : 'tap-only widgets'}.</p>`);
       out.push(chat.items.map((a) => `<div class="item"><div class="item__row"><span class="item__q">${esc(a.question)}</span>`
-        + `<span class="chip ${a.tripped ? 'chip--trip' : 'chip--ok'}">${a.tripped ? 'flag' : a.skipped ? 'skipped' : 'ok'}</span></div>`
+        + `<span class="chip ${a.tripped ? 'chip--trip' : a.unread ? '' : 'chip--ok'}">${a.tripped ? 'flag' : a.skipped ? 'skipped' : a.unread ? 'not read' : 'ok'}</span></div>`
         + `<div class="item__meta">${a.skipped ? '<em>skipped</em>' : (a.said ? '“' + esc(a.said) + '” → ' : '') + '<strong>' + esc(String(a.answer) + (a.unit ? ' ' + a.unit : '')) + '</strong>'}`
         + `${a.score != null ? ' · ' + a.score + ' in sequence' : ''}`
         + `${a.followUps && a.followUps.length ? ' · ' + a.followUps.length + ' follow-up' + (a.followUps.length === 1 ? '' : 's') : ''}`
         + `${a.concern ? ' · <span class="chip chip--trip">volunteered a concern</span>' : ''}`
+        + `${a.unread ? ' · the reader was unavailable, so no rule was applied' : ''}`
         + ` · answered in ${(a.latencyMs / 1000).toFixed(1)} s</div>`
         + (a.told ? `<div class="item__meta">Told the person: “${esc(a.told)}”</div>` : '')
         + '</div>').join(''));
@@ -195,7 +196,11 @@ export function mountBackend(visit) {
     return '<p class="note" style="margin-top:0">What a nurse or doctor has asked to be checked. Items are live from the next morning, never mid-chat.</p>'
       + '<h3>Ready-made scripts</h3>'
       + '<div class="scripts" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem">'
-      + Object.keys(SCRIPTS).map((k) => `<button type="button" class="small-btn" style="margin:0" data-script="${k}" aria-pressed="${k === runbook.scriptKey}"${k === runbook.scriptKey ? ' style="margin:0;background:#1e40af;color:#fff;border-color:#1e40af"' : ''}>${esc(SCRIPTS[k].name)}</button>`).join('')
+      + Object.keys(SCRIPTS).map((k) => {
+        const on = k === runbook.scriptKey;
+        const style = on ? 'margin:0;background:#1e40af;color:#fff;border-color:#1e40af' : 'margin:0';
+        return `<button type="button" class="small-btn" style="${style}" data-script="${k}" aria-pressed="${on}">${esc(SCRIPTS[k].name)}</button>`;
+      }).join('')
       + '</div>'
       + `<p class="note" style="margin:0 0 0.5rem">${esc(runbook.script().subtitle)} · entered by ${esc(runbook.script().addedBy)}</p>`
       + `<h3>Items <span class="chip">${enabled} of ${DAY_CAP} a day</span></h3>`

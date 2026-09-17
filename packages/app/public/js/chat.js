@@ -116,17 +116,24 @@ export function runChat(ui, ctx) {
           render(it, pending.followUps[pending.followUps.length - 1].ernie);
           return;
         }
-        finishItem(it, { said: text, value: r.value, score: r.score, reply: r.reply, rating: r.rating, concern: !!r.concern, ratingSource: 'model' });
+        // Two failed follow-ups: keep their words, but we never read them.
+        const unread = r.understood === false;
+        finishItem(it, { said: text, value: unread ? null : r.value, score: unread ? null : r.score,
+          reply: r.reply, rating: r.rating, concern: !!r.concern, ratingSource: 'model', unread });
       }).catch(() => {
         busy = false;
         events.push('chat', 'interpretFailed', { itemId: it.id });
-        const local = it.id === 'd-back' ? scoreDaysBackwards(text) : null;
+        // The reader was meant to read this and could not. Keep their words and
+        // whatever can be measured locally, but never evaluate a rule on it: the
+        // local scorer matches day names exactly, so a misspelling would flag the
+        // clinic for what is really an outage.
         finishItem(it, {
           said: text,
           value: it.kind === 'number' ? Number(String(text).replace(',', '.').replace(/[^0-9.]/g, '')) : text,
-          score: local, reply: 'Thank you.',
+          score: it.id === 'd-back' ? scoreDaysBackwards(text) : null,
+          reply: 'Thank you.',
           rating: it.kind === 'text' && it.rated ? heuristicRating(text) : null,
-          ratingSource: 'heuristic'
+          ratingSource: 'heuristic', unread: true
         });
       });
     }
@@ -190,7 +197,7 @@ export function runChat(ui, ctx) {
         itemId: it.id, kind: it.kind, question: it.question,
         said: r.said != null ? r.said : null,
         answer: r.skipped ? null : r.value, unit: it.unit || null,
-        skipped: !!r.skipped, latencyMs, tripped: false, told: null,
+        skipped: !!r.skipped, unread: !!r.unread, latencyMs, tripped: false, told: null,
         reply: r.reply || null, score: r.score == null ? undefined : r.score,
         rating: r.rating || undefined, ratingSource: r.ratingSource, concern: !!r.concern,
         followUps: pending.followUps.slice()
@@ -208,7 +215,7 @@ export function runChat(ui, ctx) {
             ? +(text.split(/\s+/).filter(Boolean).length / ((T.last - T.first) / 60000)).toFixed(1) : null
         };
       }
-      if (!r.skipped) rec.tripped = evaluateRule(it, rec.score != null ? rec.score : rec.answer);
+      if (!r.skipped && !rec.unread) rec.tripped = evaluateRule(it, rec.score != null ? rec.score : rec.answer);
       if (rec.tripped) {
         rec.told = it.saySomething || null;          // always the clinician's words
         events.push('chat', 'ruleTripped', { itemId: it.id, rule: it.rule.type, notify: it.notify });
