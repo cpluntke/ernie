@@ -65,7 +65,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
     ui.steps(null);
     ui.fixed(true);
     const body = el('div', { style: 'display:flex;flex-direction:column;flex:1;min-height:0' });
-    const instruction = el('p', { class: 'text', text: withPartner ? `Drag a piece onto the picture. ${PARTNER} will help.` : 'Drag a piece onto the picture.' }, body);
+    const instruction = el('p', { class: 'text' }, body);
     const play = el('div', { class: 'play' }, body);
     const board = svg('svg', { id: 'play', preserveAspectRatio: 'xMidYMid meet', viewBox: `0 0 ${W} ${H}`, 'aria-label': 'Jigsaw pieces and the board' }, play);
     ui.body(body);
@@ -148,9 +148,15 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
         trayTop + Math.floor(n / cols) * ch * PITCH - p.row * ch + jitter(), false);
     });
 
+    const baseInstruction = () => (withPartner
+      ? `Tap a piece, then tap the picture. ${PARTNER} will help.`
+      : 'Tap a piece, then tap the picture. You can drag them too.');
+    instruction.textContent = baseInstruction();
+
     // --- dragging
     const drags = {};
     let hintPiece = null, lastTouched = null, finished = false;
+    let chosen = null, swallowClick = false;
     const partner = { here: false, holding: null, placed: 0, timer: null, raf: null };
 
     const svgPoint = (ev) => {
@@ -193,13 +199,64 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       clamp(d.cl);
       let len = 0;
       for (let i = 1; i < d.path.length; i++) len += Math.hypot(d.path[i][0] - d.path[i - 1][0], d.path[i][1] - d.path[i - 1][1]);
-      const straight = Math.hypot(d.path[d.path.length - 1][0] - d.path[0][0], d.path[d.path.length - 1][1] - d.path[0][1]);
+      const last = d.path[d.path.length - 1];
+      const straight = Math.hypot(last[0] - d.path[0][0], last[1] - d.path[0][1]);
+
+      // The board captures the pointer, so the click that follows is retargeted
+      // off the piece. A tap has to be recognised here, from the path itself.
+      swallowClick = true;
+      setTimeout(() => { swallowClick = false; }, 0);
+      if (len < TAP_SLOP) {
+        setT(d.cl, d.tx, d.ty);           // put back the pixel a shaky tap moved
+        if (chosen && chosen.cluster !== d.cl && inPicture(last[0], last[1])) placeChosen();
+        else if (chosen && chosen.cluster === d.cl) unchoose();
+        else choose(d.piece);
+        return;
+      }
+      unchoose();
       rec('release', { piece: d.piece.i, pathLen: Math.round(len), straight: Math.round(straight), samples: d.path.length,
-        durationMs: d.path[d.path.length - 1][2] - d.path[0][2] });
+        durationMs: last[2] - d.path[0][2] });
       snap(d.cl, d.piece);
     };
     board.addEventListener('pointerup', endDrag);
     board.addEventListener('pointercancel', endDrag);
+
+    // Dragging is the fastest way and it stays, but it is the hardest thing to
+    // ask of an arthritic or tremulous hand, so it is never the only way: tap
+    // the piece, tap the picture. Both paths end in the same snap().
+    const TAP_SLOP = 0.12 * s;
+    const inPicture = (x, y) => x >= M && x <= M + PIC_W && y >= M && y <= M + PIC_H;
+    function choose(p) {
+      unchoose();
+      chosen = p;
+      layer.appendChild(p.cluster.g);
+      p.cluster.g.classList.add('cluster--chosen');
+      lastTouched = p;
+      instruction.textContent = 'Now tap the picture.';
+      if (!game.firstMoveAt) { game.firstMoveAt = now(); rec('firstMove', { piece: p.i }); }
+      rec('choose', { piece: p.i, cluster: p.cluster.pieces.length });
+    }
+    function unchoose() {
+      if (!chosen) return;
+      chosen.cluster.g.classList.remove('cluster--chosen');
+      chosen = null;
+      if (!hintPiece) instruction.textContent = baseInstruction();
+    }
+    function placeChosen() {
+      const p = chosen, cl = p.cluster;
+      chosen.cluster.g.classList.remove('cluster--chosen');
+      chosen = null;
+      rec('tapPlace', { piece: p.i, pieces: cl.pieces.length });
+      setT(cl, M, M);
+      snap(cl, p);
+    }
+    // Taps that land on a piece are handled above; this is the picture itself,
+    // and locked pieces sitting on it, which never start a drag.
+    board.addEventListener('click', (ev) => {
+      if (swallowClick || finished || !chosen) return;
+      const pt = svgPoint(ev);
+      if (inPicture(pt.x, pt.y)) placeChosen();
+    });
 
     function snap(cl, dragged) {
       let snapped = false;
@@ -319,7 +376,7 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       const o = hintPiece.node.querySelector('.piece__outline');
       o.setAttribute('stroke', '#4b5563'); o.setAttribute('stroke-width', '4');
       hintPiece = null;
-      instruction.textContent = withPartner ? `Drag a piece onto the picture. ${PARTNER} will help.` : 'Drag a piece onto the picture.';
+      instruction.textContent = chosen ? 'Now tap the picture.' : baseInstruction();
     }
     function updateStatus() {
       const left = pieces.length - lockedCount();
@@ -350,8 +407,8 @@ export function runJigsaw(ui, ctx, { pieces: count = 12, withPartner = false } =
       resolve(game);
     }
 
-    ui.topbarAction({ label: 'Leave it', onClick: leave });
-    ui.actions([{ label: 'Show me where this goes', kind: 'secondary', onClick: showHint }]);
+    ui.topbarAction({ label: 'Stop the puzzle', onClick: leave });
+    ui.actions([{ label: 'Show me a piece and where it goes', kind: 'secondary', onClick: showHint }]);
     updateStatus();
     rec('shown', { pieces: count, withPartner });
     if (withPartner) partnerStart();

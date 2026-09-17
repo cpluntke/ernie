@@ -220,7 +220,9 @@ export function runSignature(ui, ctx) {
       el('span', { class: 'pad-x', 'aria-hidden': 'true', text: '×' }, wrap);
       el('div', { class: 'pad-line', 'aria-hidden': 'true' }, wrap);
       const hint = el('div', { class: 'pad-hint', id: 'pad-hint', 'aria-hidden': 'true', text: 'Sign on the line' }, wrap);
-      el('p', { class: 'text text--soft', text: 'Any signature is fine. There is no wrong way.' }, body);
+      // The line under the pad doubles as the reason "Done signing" is not yet
+      // live: a greyed button with no explanation is a dead end.
+      const helper = el('p', { class: 'text text--soft', text: 'Sign on the line above, then tap Done signing.' }, body);
       ui.body(body);
       ctx2d = canvas.getContext('2d');
       sig = { shownAt: Math.round(now()), strokes: [] };
@@ -270,6 +272,9 @@ export function runSignature(ui, ctx) {
           events.push('signature', 'startAgain', { strokesCleared: sig.strokes.length });
           sig = { shownAt: Math.round(now()), strokes: [] }; live = null; hint.hidden = false; setActions(); redraw();
         } };
+        helper.textContent = sig.strokes.length
+          ? 'Any signature is fine. There is no wrong way.'
+          : 'Sign on the line above, then tap Done signing.';
         ui.actions([
           clear,
           { label: 'Done signing', kind: 'huge', disabled: !sig.strokes.length, onClick: () => {

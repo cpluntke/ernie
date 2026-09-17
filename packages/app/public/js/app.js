@@ -32,8 +32,9 @@ const ui = {
   // leaving does not need a second button eating the height.
   topbarAction(a) {
     const b = $('restart');
+    b.firstElementChild.textContent = a ? '\u2715' : '\u2302';
     b.lastElementChild.textContent = a ? a.label : 'Start again';
-    b.onclick = a ? a.onClick : () => visitFlow();
+    b.onclick = a ? a.onClick : () => confirmRestart();
     ui.topbarNote(null);
   },
   // Progress lives in the bar's empty half rather than in a line of its own:
@@ -54,6 +55,7 @@ const ui = {
   },
   actions(list, opts = {}) {
     actionsEl.innerHTML = '';
+    actionsEl.parentElement.hidden = !list.length;
     actionsEl.className = 'actions__inner' + (opts.row ? ' actions__inner--row' : '');
     buttons.clear();
     for (const a of list) {
@@ -79,6 +81,32 @@ function say(title, paragraphs, actions, stepIndex) {
   for (const p of paragraphs) el('p', { class: 'text' + (p.large ? ' text--large' : '') + (p.soft ? ' text--soft' : ''), text: p.text }, body);
   ui.body(body);
   ui.actions(actions);
+}
+
+// Starting over destroys the signature and every answer given today, and the
+// button sits where a hesitant person taps first, so it asks before it does it.
+// The question sits over the screen rather than replacing it: saying no has to
+// put them back exactly where they were, and the flow cannot be rewound.
+function confirmRestart() {
+  // Not "has the visit finished a step" but "has she done anything at all":
+  // the likeliest accidental tap is mid-signature, before any step resolves.
+  const doneSomething = events.list.some((e) => !(e.activity === 'visit' && e.kind === 'started')
+    && !(e.activity === 'signature' && e.kind === 'shown'));
+  if (!doneSomething) return visitFlow();
+  if (document.getElementById('confirm')) return;
+  const close = () => { const d = document.getElementById('confirm'); if (d) d.remove(); };
+  const sheet = el('div', { class: 'confirm__sheet', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'confirm-title' });
+  el('h2', { id: 'confirm-title', class: 'confirm__title', text: 'Start the whole visit over?' }, sheet);
+  el('p', { class: 'text text--large', text: 'Your signature and your answers today will be thrown away.' }, sheet);
+  const row = el('div', { class: 'confirm__actions' }, sheet);
+  const no = el('button', { type: 'button', class: 'btn btn--secondary btn--full', text: 'No, stay here', onclick: close }, row);
+  el('button', { type: 'button', class: 'btn btn--full', text: 'Yes, start over',
+    onclick: () => { close(); visitFlow(); } }, row);
+  const back = el('div', { id: 'confirm', class: 'confirm', onclick: (ev) => { if (ev.target.id === 'confirm') close(); } });
+  back.appendChild(sheet);
+  back.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') close(); });
+  document.querySelector('.app').appendChild(back);
+  no.focus();
 }
 
 // --------------------------------------------------------------- the visit

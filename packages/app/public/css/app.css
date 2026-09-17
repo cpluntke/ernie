@@ -38,9 +38,11 @@ button, input, textarea, select { font: inherit; }
   border: 1px solid #6b7280; background: transparent; color: #e5e7eb; cursor: pointer;
 }
 .demo-strip__btn[aria-pressed="true"] { background: #e5e7eb; color: #111827; }
-.row { flex: 1 1 auto; min-height: 0; display: flex; position: relative; }
-.stage { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; }
-.app { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; background: var(--ernie-paper); }
+.row { flex: 1 1 auto; min-height: 0; display: flex; flex-wrap: wrap; position: relative; }
+/* At 200% zoom a laptop window is narrower than a phone. The app keeps its
+   width and the backend panel wraps underneath rather than squeezing it. */
+.stage { flex: 1 1 20rem; min-width: 20rem; height: 100%; display: flex; }
+.app { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; flex-direction: column; background: var(--ernie-paper); position: relative; }
 
 /* This is a phone app. On a laptop, show it as one rather than stretching it
    across the window: a phone-width frame on a plain surface, with the demo
@@ -70,7 +72,8 @@ button, input, textarea, select { font: inherit; }
 }
 .topbar__spacer { flex: 1; min-width: 0; }
 .topbar__spacer--note { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar .btn { white-space: nowrap; padding-inline: var(--ernie-space-2); }
+.topbar { flex-wrap: wrap; }
+.topbar .btn { padding-inline: var(--ernie-space-2); overflow-wrap: break-word; min-width: 0; }
 .body {
   flex: 1 1 auto; min-height: 0; width: 100%; max-width: var(--ernie-measure); margin: 0 auto;
   padding: var(--ernie-space-3) var(--ernie-space-2); display: flex; flex-direction: column;
@@ -91,12 +94,15 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .text--large { font-size: var(--ernie-text-lg); }
 .text--soft { color: var(--ernie-ink-soft); }
 .actions { flex: 0 0 auto; background: var(--ernie-paper); border-top: 2px solid var(--ernie-border); padding: var(--ernie-space-2); }
+.actions[hidden] { display: none; }
 .actions__inner { max-width: var(--ernie-measure); margin: 0 auto; display: flex; flex-direction: column; gap: var(--ernie-space-2); }
 /* Two buttons on one line, used where the screen's own thing needs the height.
    The main one keeps twice the width so it never reads as the lesser choice. */
 .actions__inner--row { flex-direction: row; align-items: stretch; }
-.actions__inner--row > .btn { flex: 1 1 0; min-width: 0; }
-.actions__inner--row > .btn--huge { flex: 2 1 0; }
+.actions__inner--row > .btn { flex: 1 1 0; min-width: 0; padding-inline: var(--ernie-space-2); }
+/* Wide enough that the main label stays on one line: a second line here costs
+   the pad above it 30px, which is the whole point of putting them on one row. */
+.actions__inner--row > .btn--huge { flex: 3 1 0; font-size: var(--ernie-text-lg); }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--ernie-space-1);
@@ -109,7 +115,10 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .btn--secondary { background: var(--ernie-paper); color: var(--ernie-primary); }
 .btn--huge { font-size: var(--ernie-heading); min-height: 5rem; padding: var(--ernie-space-3) var(--ernie-space-4); }
 .btn--full { display: flex; width: 100%; }
-.btn:disabled { background: var(--ernie-surface); border-color: var(--ernie-border); color: var(--ernie-ink-soft); cursor: not-allowed; }
+.btn:disabled {
+  background: transparent; border-color: transparent; color: var(--ernie-ink-soft);
+  cursor: default; opacity: 0.6;
+}
 .btn__icon { font-size: 1.25em; line-height: 1; }
 
 /* progress through the visit, in words */
@@ -120,9 +129,9 @@ h1.title--compact { font-size: var(--ernie-heading-2); margin-bottom: var(--erni
 .steps__seg--done { background: var(--ernie-primary); border-color: var(--ernie-primary); }
 
 /* choices */
-.choice { border: 0; padding: 0; margin: 0 0 var(--ernie-space-3); }
+.choice { border: 0; padding: 0; margin: 0 0 var(--ernie-space-2); }
 .choice__legend { font-weight: 700; padding: 0; margin-bottom: var(--ernie-space-2); }
-.answers { display: grid; gap: var(--ernie-space-2); grid-template-columns: 1fr; margin: 0 0 var(--ernie-space-2); }
+.answers { display: grid; gap: var(--ernie-space-2); grid-template-columns: 1fr; margin: 0; }
 .answers--two { grid-template-columns: 1fr 1fr; }
 .answer {
   display: flex; align-items: center; justify-content: center; min-height: var(--ernie-target);
@@ -197,15 +206,39 @@ textarea.say {
 .piece { cursor: grab; }
 .piece--locked { cursor: default; }
 .cluster--dragging .piece__outline { stroke: var(--ernie-primary); stroke-width: 6; }
+/* The piece waiting to be placed by tapping, marked by more than colour. */
+.cluster--chosen .piece__outline { stroke: var(--ernie-primary); stroke-width: 10; stroke-dasharray: 26 14; }
 .cluster--dragging { filter: drop-shadow(0 6px 10px rgba(17, 24, 39, 0.35)); }
 .cluster--peer .piece__outline { stroke: var(--ernie-success); stroke-width: 6; }
 .tag__box { fill: var(--ernie-success); }
 .tag__text { fill: #ffffff; font-family: var(--ernie-font); font-weight: 700; }
 .status { margin: 0 0 var(--ernie-space-1); font-weight: 700; }
 
+/* A short window — a laptop at 200% zoom, or a phone lying on its side — has
+   no room for generous padding, and the pad is what the screen is for. */
+@media (max-height: 700px) {
+  .body { padding-block: var(--ernie-space-2); }
+  .pad-wrap { min-height: 6rem; }
+  h1 { margin-bottom: var(--ernie-space-2); }
+  .btn--huge { min-height: var(--ernie-target); padding-block: var(--ernie-space-2); }
+}
+
+/* The one question the app ever asks over the top of a screen: saying no has
+   to leave the screen underneath exactly as it was. */
+.confirm {
+  position: absolute; inset: 0; z-index: 20; display: flex; align-items: flex-end;
+  background: rgba(17, 24, 39, 0.55);
+}
+.confirm__sheet {
+  width: 100%; max-height: 100%; overflow-y: auto; background: var(--ernie-paper);
+  border-top: 3px solid var(--ernie-border); padding: var(--ernie-space-3) var(--ernie-space-2);
+}
+.confirm__title { font-size: var(--ernie-heading-2); line-height: 1.25; margin: 0 0 var(--ernie-space-2); }
+.confirm__actions { display: flex; flex-direction: column; gap: var(--ernie-space-2); margin-top: var(--ernie-space-2); }
+
 /* ------------------------------------------------------------- backend */
 .backend {
-  flex: 0 0 30rem; width: 30rem; max-width: 100%; height: 100%; overflow-y: auto;
+  flex: 0 1 30rem; width: 30rem; max-width: 100%; height: 100%; overflow-y: auto;
   border-left: 2px solid var(--ernie-border); background: var(--ernie-surface);
   padding: 1rem; font-size: 0.875rem; line-height: 1.45;
 }
