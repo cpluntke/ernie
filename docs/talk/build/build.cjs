@@ -39,16 +39,17 @@ const phone = (s, file, x, y, h) => {
   T(s, 'Margaret is 84.', { x: 0.6, y: 0.4, w: 5.8, h: 0.65, fontSize: 32, bold: true });
   T(s, 'Every morning she signs Ernie’s book. This morning she was slower, and nobody was there to notice.', { x: 0.6, y: 1.15, w: 5.6, h: 1.1, fontSize: 21, color: INK });
   T(s, 'Hypoactive delirium, the most common kind, looks like nothing at all: quieter, slower, a little withdrawn. The cause is usually cheap to fix on the day: an infection, dehydration, a new tablet. Missed, it ends in the emergency room.', { x: 0.6, y: 2.3, w: 5.6, h: 1.15, fontSize: 14, color: GREY });
-  R(s, { x: 0.6, y: 3.45, w: 2.7, h: 1.0, fill: { color: SOFT } });
-  T(s, '60–75%', { x: 0.75, y: 3.5, w: 2.5, h: 0.5, fontSize: 28, bold: true, color: BLUE });
-  T(s, 'of cases unrecognised in hospital and in the ED ¹', { x: 0.75, y: 4.0, w: 2.5, h: 0.4, fontSize: 10.5, color: GREY });
-  R(s, { x: 3.5, y: 3.45, w: 2.7, h: 1.0, fill: { color: SOFT } });
-  T(s, '7 M+', { x: 3.65, y: 3.5, w: 2.5, h: 0.5, fontSize: 28, bold: true, color: BLUE });
-  T(s, 'hospitalised US adults affected each year ²', { x: 3.65, y: 4.0, w: 2.5, h: 0.4, fontSize: 10.5, color: GREY });
+  const tiles = [['60–75%', 'of cases unrecognised in hospital and in the ED ¹'], ['7 M+', 'hospitalised US adults affected each year ²'], ['40–100 k', 'lives a year, if home detection prevented delirium as well as hospital programmes do. A ceiling ⁸']];
+  tiles.forEach(([n, l], i) => {
+    const x = 0.6 + i * 1.95;
+    R(s, { x, y: 3.45, w: 1.8, h: 1.05, fill: { color: SOFT } });
+    T(s, n, { x: x + 0.12, y: 3.5, w: 1.6, h: 0.45, fontSize: 22, bold: true, color: BLUE });
+    T(s, l, { x: x + 0.12, y: 3.93, w: 1.6, h: 0.55, fontSize: 8.5, color: GREY });
+  });
   T(s, 'Delirium is a change from your own baseline. The home never had one.', { x: 0.6, y: 4.55, w: 5.9, h: 0.5, fontSize: 13, italic: true, color: BLUE });
-  foot(s, '¹ Unrecognised in up to 60% of hospital cases and ~75% in the ED: Delirium in Hospitalized Older Adults, narrative review (PMC 2026); Han et al., ED delirium screening (PMC 2024).  ² Frontiers in Public Health 2026, Medicare Current Beneficiary Survey 2019–21.');
+  foot(s, '¹ Narrative review (PMC 2026); ED delirium screening (PMC 2024).  ² Frontiers in Public Health 2026, MCBS 2019–21.  ⁸ Witlox et al., JAMA 2010 (38.0% vs 27.5% dead at ~2 years, adjusted HR 1.95) × 1.3–2.6 M older adults a year × 30–40% preventable (HELP). Association, not proof; see sources slide.');
   phone(s, '03-book-page-c.png', 7.1, 0.5, 4.5);
-  s.addNotes('0:30. Margaret is a person, not a use case. Hypoactive delirium is withdrawal; the first anyone knows is the ER. Unrecognised in 60 to 75 percent of cases even where clinicians are looking, and nothing at home looks at all. The thesis in one line: delirium is a change from your own baseline, and the home never had one.');
+  s.addNotes('0:30. Margaret is a person, not a use case. Hypoactive delirium is withdrawal; the first anyone knows is the ER. Unrecognised in 60 to 75 percent of cases even where clinicians are looking, and nothing at home looks at all. People who have delirium are far more likely to be dead two years later; if we could prevent it at home the way hospital programmes do, that is tens of thousands of lives a year, and I will say plainly that is a ceiling, not a claim. The thesis in one line: delirium is a change from your own baseline, and the home never had one.');
 }
 
 // 3 ---------------------------------------------------------------- the gap, in numbers
@@ -72,15 +73,15 @@ const phone = (s, file, x, y, h) => {
     ['$36 B', 'a year: 2.0 M Medicare readmissions at $18,100 each, 17 per 100 stays ³'],
     ['up to 3%', 'off every Medicare inpatient payment for a year when a hospital’s readmissions run high. FY2022: 2,499 hospitals, $521 M ⁴'],
     ['+$8,110', 'in hospital charges when a stay involves delirium, against a stay that does not ²'],
-    ['~27%', 'of readmissions judged avoidable (median of 34 studies). Delirium itself: 30–40% preventable ⁶']
+    ['$3.6–5.4 B', 'a year of Medicare readmissions attributable to delirium. If a quarter is avoidable, as for readmissions generally: about $1 B ⁶ ⁷']
   ];
   stats.forEach(([n, l], i) => {
     const y = 1.6 + i * 0.88;
     T(s, n, { x: 6.2, y, w: 3.3, h: 0.38, fontSize: 21, bold: true, color: i === 1 ? CORAL : BLUE });
     T(s, l, { x: 6.2, y: y + 0.36, w: 3.3, h: 0.5, fontSize: 9, color: GREY });
   });
-  foot(s, '³ AHRQ HCUP Statistical Brief 307, Nationwide Readmissions Database 2020.  ⁴ CMS Hospital Readmissions Reduction Program; KFF, 10 Years of Hospital Readmissions Penalties (FY2022).  ⁵ Community hospital cohort, n = 8,645, OR 2.60 (PMC 2019).  ⁶ van Walraven et al., CMAJ 2011; Inouye et al., NEJM 1999 (HELP).');
-  s.addNotes('1:15. Value-based care moved the cost of coming back onto the hospital: a readmission penalty is a haircut on every Medicare inpatient payment for a year, up to three percent. Sepsis and heart failure send the most people back; delirium is not a category, it rides inside those stays and more than doubles the odds of returning. A stay with delirium bills about eight thousand dollars more. A quarter of readmissions are judged avoidable, and a third of delirium is preventable with cheap measures. The outcome is decided at home, between visits, and nobody is there. So: a daily visit.');
+  foot(s, '³ AHRQ HCUP Statistical Brief 307, NRD 2020.  ⁴ CMS HRRP; KFF, 10 Years of Hospital Readmissions Penalties (FY2022).  ⁵ Community hospital cohort, n = 8,645, OR 2.60 (PMC 2019).  ⁶ van Walraven et al., CMAJ 2011.  ⁷ Back-of-envelope from ²,³,⁵: upper bound, assumes the association is causal; see sources slide.');
+  s.addNotes('1:15. Value-based care moved the cost of coming back onto the hospital: a readmission penalty is a haircut on every Medicare inpatient payment for a year, up to three percent. Sepsis and heart failure send the most people back; delirium is not a category, it rides inside those stays and more than doubles the odds of returning. A stay with delirium bills about eight thousand dollars more. Put together, on the order of four to five billion dollars of Medicare readmissions a year ride on delirium; if a quarter of those are avoidable, that is about a billion. Upper bound, and no one has yet shown a home check-in moves it. The outcome is decided at home, between visits, and nobody is there. So: a daily visit.');
 }
 
 // 4 ---------------------------------------------------------------- demo
@@ -183,13 +184,18 @@ const phone = (s, file, x, y, h) => {
     ['3', 'Medicare: 2,002,700 30-day readmissions in 2020, 17.0 per 100 index stays, $36.2 B aggregate, $18,100 average. Top causes at index admission: septicemia 207,300; heart failure 147,800; acute renal failure 60,000; pneumonia 58,900; diabetes with complications 58,700.', 'AHRQ HCUP Statistical Brief #307, Nationwide Readmissions Database, 2020.'],
     ['4', 'HRRP reduces a hospital’s Medicare inpatient payments by up to 3% for a fiscal year when 30-day readmissions for six conditions exceed the expected rate. FY2022: 2,499 of 3,139 hospitals penalised, average 0.64%, 39 at the 3% maximum, about $521 M withheld.', 'CMS, Hospital Readmissions Reduction Program; KFF, 10 Years of Hospital Readmissions Penalties.'],
     ['5', 'Inpatient delirium associated with 30-day readmission, adjusted OR 2.60 (95% CI 1.96–3.44); 718 delirious vs 7,927 non-delirious patients, one community hospital, 2010–2015.', 'Association between Inpatient Delirium and Hospital Readmission in Patients ≥65 (PMC, 2019).'],
-    ['6', 'Median 27% of readmissions judged avoidable across 34 studies (range 5–79%). Multicomponent prevention (HELP) cut delirium incidence from 15.0% to 9.9%, about a third to 40%.', 'van Walraven et al., CMAJ 2011; Inouye et al., NEJM 1999.']
+    ['6', 'Median 27% of readmissions judged avoidable across 34 studies (range 5–79%). Multicomponent prevention (HELP) cut delirium incidence from 15.0% to 9.9%.', 'van Walraven et al., CMAJ 2011; Inouye et al., NEJM 1999.'],
+    ['7', 'Back of the envelope: 11.8 M Medicare stays × 11% = 1.3 M delirium stays. With 2.0–2.6× the readmission risk and a 17% overall rate, delirium stays run 15–23 points above the rest: 200–300 k excess readmissions × $18,100 = $3.6–5.4 B a year. × 27% avoidable ≈ $1.0–1.5 B. Upper bound: delirium also marks sicker patients, and no trial yet shows a home check-in reduces readmissions.', 'Derived from sources 2, 3 and 5.'],
+    ['8', 'Lives: 38.0% of older patients who had delirium were dead at ~2 years vs 27.5% of controls (adjusted HR 1.95, 95% CI 1.51–2.52; 7 studies). That 10-point excess on 1.3–2.6 M older adults a year is 130–270 k deaths associated with delirium. If home detection prevented delirium as well as in-hospital programmes (30–40%) and deaths fell with it: 40–100 k a year. Association only; delirium also marks frailty, and no trial shows a home check-in saves lives.', 'Witlox et al., JAMA 2010; Inouye et al., NEJM 1999; sources 2 and 3.']
   ];
+  const heights = [0.4, 0.45, 0.55, 0.55, 0.45, 0.45, 0.72, 0.78];
+  let yy = 1.0;
   rows.forEach(([n, claim, src], i) => {
-    const y = 1.1 + i * 0.68;
+    const y = yy, h = heights[i];
     T(s, n, { x: 0.6, y, w: 0.3, h: 0.3, fontSize: 11, bold: true, color: BLUE });
-    T(s, claim, { x: 0.95, y, w: 5.3, h: 0.66, fontSize: 9, color: INK });
-    T(s, src, { x: 6.4, y, w: 3.1, h: 0.66, fontSize: 8.5, italic: true, color: GREY });
+    T(s, claim, { x: 0.95, y, w: 5.6, h: h - 0.05, fontSize: 7.5, color: INK });
+    T(s, src, { x: 6.7, y, w: 2.8, h: h - 0.05, fontSize: 7.5, italic: true, color: GREY });
+    yy += h;
   });
   s.addNotes('Not spoken. Left in the deck so every number on slides 2 and 3 can be checked.');
 }
