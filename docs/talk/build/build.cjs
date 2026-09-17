@@ -57,11 +57,11 @@ const phone = (s, file, x, y, h) => {
   const s = pres.addSlide();
   s.background = { color: PAPER };
   title(s, 'The gap is the 30 days at home.');
-  sub(s, 'Value-based care makes hospitals carry the cost of patients who come back. What sends Medicare patients back, and what a missed bad day costs.', 8.8, 1.0);
+  T(s, 'Hospitals and ACOs now carry the cost of the 30 days after discharge (TEAM, LEAD), and since July CMS’s ACCESS model pays fixed amounts for tech-enabled chronic care ⁹.', { x: 0.6, y: 1.08, w: 8.8, h: 0.55, fontSize: 14, color: GREY });
   // chart: top five Medicare readmission conditions by count, 2020
-  T(s, 'Medicare 30-day readmissions by cause at first admission, 2020 ³', { x: 0.6, y: 1.65, w: 5.3, h: 0.3, fontSize: 10.5, bold: true, color: INK });
+  T(s, 'Medicare 30-day readmissions by cause at first admission, 2020 ³', { x: 0.6, y: 1.72, w: 5.3, h: 0.3, fontSize: 10.5, bold: true, color: INK });
   s.addChart(pres.ChartType.bar, [{ name: 'Readmissions', labels: ['Septicemia', 'Heart failure', 'Kidney failure', 'Pneumonia', 'Diabetes with complications'], values: [207.3, 147.8, 60.0, 58.9, 58.7] }], {
-    x: 0.5, y: 1.95, w: 5.3, h: 2.55, barDir: 'bar', barGapWidthPct: 45,
+    x: 0.5, y: 2.0, w: 5.3, h: 2.5, barDir: 'bar', barGapWidthPct: 45,
     chartColors: [BLUE], showLegend: false, showTitle: false,
     showValue: true, dataLabelPosition: 'outEnd', dataLabelFormatCode: '#,##0"k"', dataLabelFontSize: 10, dataLabelColor: INK, dataLabelFontFace: F,
     catAxisLabelFontSize: 10.5, catAxisLabelColor: INK, catAxisLabelFontFace: F, catAxisOrientation: 'maxMin', catGridLine: { style: 'none' },
@@ -80,8 +80,8 @@ const phone = (s, file, x, y, h) => {
     T(s, n, { x: 6.2, y, w: 3.3, h: 0.38, fontSize: 21, bold: true, color: i === 1 ? CORAL : BLUE });
     T(s, l, { x: 6.2, y: y + 0.36, w: 3.3, h: 0.5, fontSize: 9, color: GREY });
   });
-  foot(s, '³ AHRQ HCUP Statistical Brief 307, NRD 2020.  ⁴ CMS HRRP; KFF, 10 Years of Hospital Readmissions Penalties (FY2022).  ⁵ Community hospital cohort, n = 8,645, OR 2.60 (PMC 2019).  ⁶ van Walraven et al., CMAJ 2011.  ⁷ Back-of-envelope from ²,³,⁵: upper bound, assumes the association is causal; see sources slide.');
-  s.addNotes('1:15. Value-based care moved the cost of coming back onto the hospital: a readmission penalty is a haircut on every Medicare inpatient payment for a year, up to three percent. Sepsis and heart failure send the most people back; delirium is not a category, it rides inside those stays and more than doubles the odds of returning. A stay with delirium bills about eight thousand dollars more. Put together, on the order of four to five billion dollars of Medicare readmissions a year ride on delirium; if a quarter of those are avoidable, that is about a billion. Upper bound, and no one has yet shown a home check-in moves it. The outcome is decided at home, between visits, and nobody is there. So: a daily visit.');
+  foot(s, '³ AHRQ HCUP Statistical Brief 307, NRD 2020.  ⁴ CMS HRRP; KFF, 10 Years of Hospital Readmissions Penalties (FY2022).  ⁵ Community hospital cohort, n = 8,645, OR 2.60 (PMC 2019).  ⁶ van Walraven et al., CMAJ 2011.  ⁷ Back-of-envelope from ²,³,⁵: upper bound; see sources slide.  ⁹ CMS Innovation Center: TEAM (2026), LEAD (2027), ACCESS (July 2026).');
+  s.addNotes('1:15. Value-based care moved the cost of coming back onto the hospital: a readmission penalty is a haircut on every Medicare inpatient payment for a year, up to three percent. Sepsis and heart failure send the most people back; delirium is not a category, it rides inside those stays and more than doubles the odds of returning. A stay with delirium bills about eight thousand dollars more. Put together, on the order of four to five billion dollars of Medicare readmissions a year ride on delirium; if a quarter of those are avoidable, that is about a billion. Upper bound, and no one has yet shown a home check-in moves it. And the rails now exist: TEAM and LEAD put hospitals and ACOs at risk for these 30 days, and since July ACCESS pays fixed outcome-aligned amounts for tech-enabled chronic care. The outcome is decided at home, between visits, and nobody is there. So: a daily visit.');
 }
 
 // 4 ---------------------------------------------------------------- demo
@@ -168,9 +168,13 @@ const phone = (s, file, x, y, h) => {
     T(s, b, { x: 1.35, y: y + 0.33, w: 4.8, h: 0.5, fontSize: 12, color: ICE });
   });
   T(s, 'Decision support, never a diagnosis. A human on every flag.', { x: 0.6, y: 4.5, w: 5.8, h: 0.5, fontSize: 13, italic: true, color: ICE });
-  for (const [n, x, y] of [['half-a-house', 6.6, 0.5], ['cat-with-no-face', 8.0, 1.7], ['flower-with-no-petals', 6.6, 2.9]]) s.addImage({ path: `${S}doodle-${n}-white.png`, x, y, w: 1.6, h: 1.6 });
+  R(s, { x: 6.6, y: 0.6, w: 2.8, h: 2.55, fill: { color: BLUE } });
+  T(s, 'Who pays', { x: 6.8, y: 0.72, w: 2.4, h: 0.4, fontSize: 16, bold: true, color: 'FFFFFF' });
+  T(s, 'CMS’s ACCESS model (July 2026) pays fixed, outcome-aligned amounts for tech-enabled chronic care instead of fee-for-service. TEAM and LEAD make hospitals and ACOs carry the 30 days at home.', { x: 6.8, y: 1.15, w: 2.4, h: 1.5, fontSize: 10.5, color: 'FFFFFF' });
+  T(s, 'A daily visit is what those models pay for ⁹', { x: 6.8, y: 2.62, w: 2.4, h: 0.45, fontSize: 10.5, bold: true, color: ICE });
+  s.addImage({ path: `${S}doodle-half-a-house-white.png`, x: 7.3, y: 3.25, w: 1.4, h: 1.4 });
   T(s, 'Synthetic people only. Not a medical device.', { x: 6.6, y: 4.75, w: 3.0, h: 0.4, fontSize: 10, italic: true, color: MUTED });
-  s.addNotes('4:40. Three next steps, then the honesty line: synthetic data, decision support, a human on every flag. Close on Margaret: the point is that someone notices on the day it starts.');
+  s.addNotes('4:40. Three next steps. Who pays: ACCESS is the first CMS model that pays fixed outcome-aligned amounts for tech-enabled chronic care, and TEAM and LEAD make providers carry the 30 days, so a daily visit is what those models pay for. Then the honesty line: synthetic data, decision support, a human on every flag. Close on Margaret: the point is that someone notices on the day it starts.');
 }
 
 // 8 ---------------------------------------------------------------- sources (not spoken)
@@ -186,15 +190,16 @@ const phone = (s, file, x, y, h) => {
     ['5', 'Inpatient delirium associated with 30-day readmission, adjusted OR 2.60 (95% CI 1.96–3.44); 718 delirious vs 7,927 non-delirious patients, one community hospital, 2010–2015.', 'Association between Inpatient Delirium and Hospital Readmission in Patients ≥65 (PMC, 2019).'],
     ['6', 'Median 27% of readmissions judged avoidable across 34 studies (range 5–79%). Multicomponent prevention (HELP) cut delirium incidence from 15.0% to 9.9%.', 'van Walraven et al., CMAJ 2011; Inouye et al., NEJM 1999.'],
     ['7', 'Back of the envelope: 11.8 M Medicare stays × 11% = 1.3 M delirium stays. With 2.0–2.6× the readmission risk and a 17% overall rate, delirium stays run 15–23 points above the rest: 200–300 k excess readmissions × $18,100 = $3.6–5.4 B a year. × 27% avoidable ≈ $1.0–1.5 B. Upper bound: delirium also marks sicker patients, and no trial yet shows a home check-in reduces readmissions.', 'Derived from sources 2, 3 and 5.'],
-    ['8', 'Lives: 38.0% of older patients who had delirium were dead at ~2 years vs 27.5% of controls (adjusted HR 1.95, 95% CI 1.51–2.52; 7 studies). That 10-point excess on 1.3–2.6 M older adults a year is 130–270 k deaths associated with delirium. If home detection prevented delirium as well as in-hospital programmes (30–40%) and deaths fell with it: 40–100 k a year. Association only; delirium also marks frailty, and no trial shows a home check-in saves lives.', 'Witlox et al., JAMA 2010; Inouye et al., NEJM 1999; sources 2 and 3.']
+    ['8', 'Lives: 38.0% of older patients who had delirium were dead at ~2 years vs 27.5% of controls (adjusted HR 1.95, 95% CI 1.51–2.52; 7 studies). That 10-point excess on 1.3–2.6 M older adults a year is 130–270 k deaths associated with delirium. If home detection prevented delirium as well as in-hospital programmes (30–40%) and deaths fell with it: 40–100 k a year. Association only; delirium also marks frailty, and no trial shows a home check-in saves lives.', 'Witlox et al., JAMA 2010; Inouye et al., NEJM 1999; sources 2 and 3.'],
+    ['9', 'ACCESS (Advancing Chronic Care with Effective, Scalable Solutions): voluntary 10-year model from 1 July 2026 paying recurring outcome-aligned payments for technology-enabled chronic care; ~150 digital health companies and providers selected. TEAM: mandatory bundled payment for five surgical episodes at ~750 hospitals from January 2026. LEAD: 10-year ACO model from 2027, replacing ACO REACH.', 'CMS Innovation Center model pages; Fierce Healthcare, Dec 2025 and Apr 2026.']
   ];
-  const heights = [0.4, 0.45, 0.55, 0.55, 0.45, 0.45, 0.72, 0.78];
-  let yy = 1.0;
+  const heights = [0.36, 0.42, 0.5, 0.5, 0.4, 0.4, 0.66, 0.72, 0.56];
+  let yy = 0.95;
   rows.forEach(([n, claim, src], i) => {
     const y = yy, h = heights[i];
     T(s, n, { x: 0.6, y, w: 0.3, h: 0.3, fontSize: 11, bold: true, color: BLUE });
-    T(s, claim, { x: 0.95, y, w: 5.6, h: h - 0.05, fontSize: 7.5, color: INK });
-    T(s, src, { x: 6.7, y, w: 2.8, h: h - 0.05, fontSize: 7.5, italic: true, color: GREY });
+    T(s, claim, { x: 0.95, y, w: 5.6, h: h - 0.04, fontSize: 7.2, color: INK });
+    T(s, src, { x: 6.7, y, w: 2.8, h: h - 0.04, fontSize: 7.2, italic: true, color: GREY });
     yy += h;
   });
   s.addNotes('Not spoken. Left in the deck so every number on slides 2 and 3 can be checked.');
