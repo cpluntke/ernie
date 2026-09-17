@@ -47,6 +47,14 @@ const ui = {
   body(node) { bodyEl.innerHTML = ''; if (node) bodyEl.appendChild(node); },
   fixed(on) { $('body-wrap').classList.toggle('body--fixed', !!on); },
   scrollEnd() { const w = $('body-wrap'); w.scrollTop = w.scrollHeight; },
+  // Scrolling to the bottom of a transcript pushes the question itself off the
+  // top, and then the answer buttons are for a question nobody can see. Put the
+  // question at the top instead: question and answers stay on screen together.
+  scrollToAsk() {
+    const w = $('body-wrap');
+    const ask = w.querySelector('.ask:last-of-type') || w.querySelector('.ask');
+    w.scrollTop = ask ? Math.max(0, ask.offsetTop - w.offsetTop - 8) : w.scrollHeight;
+  },
   steps(index) {
     if (index == null) { stepsEl.hidden = true; return; }
     stepsEl.hidden = false;
@@ -196,7 +204,7 @@ function farewell() {
       : 'You finished the picture on your own.' }, body);
   }
   ui.body(body);
-  ui.actions([{ label: 'Start again', kind: 'secondary', onClick: () => visitFlow() }]);
+  ui.actions([]);        // "Start again" lives in the top bar, where it always is
   backend.schedule();
 }
 

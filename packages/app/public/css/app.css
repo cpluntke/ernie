@@ -73,15 +73,18 @@ button, input, textarea, select { font: inherit; }
 .topbar__spacer { flex: 1; min-width: 0; }
 /* The count is the only progress this screen shows, so it wraps rather than
    being ellipsed away; the top bar wraps under it if it comes to that. */
-.topbar__spacer--note { font-weight: 700; flex: 1 1 8rem; min-width: 8rem; }
+.topbar__spacer--note { font-weight: 700; flex: 1 1 6.5rem; min-width: 6.5rem; }
 .topbar { flex-wrap: wrap; }
-.topbar .btn { padding-inline: var(--ernie-space-2); overflow-wrap: break-word; min-width: 0; }
+/* 20px, the floor for body text rather than the 24px the footer uses: at 390px
+   the count and the way out have to share one line, and a second row here costs
+   the board more than the point size is worth. */
+.topbar .btn { padding-inline: var(--ernie-space-2); overflow-wrap: break-word; min-width: 0; font-size: var(--ernie-text); }
 .body {
   flex: 1 1 auto; min-height: 0; width: 100%; max-width: var(--ernie-measure); margin: 0 auto;
   padding: var(--ernie-space-3) var(--ernie-space-2); display: flex; flex-direction: column;
   overflow-y: auto;
 }
-.body--fixed { overflow-x: hidden; overflow-y: auto; }
+.body--fixed { overflow: hidden; }
 /* The activity area is a column in its own right: the jigsaw board grows into it. */
 #body-area { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 h1 { font-size: var(--ernie-heading); line-height: 1.25; font-weight: 700; margin: 0 0 var(--ernie-space-3); text-wrap: balance; }
@@ -200,9 +203,11 @@ textarea.say {
 }
 
 /* -------------------------------------------------------------- jigsaw */
-/* The board scales to whatever box it gets, so without a floor a short window
-   shrinks the pieces to untappable specks. Below this the card scrolls instead. */
-.play { flex: 1 1 auto; min-height: 23rem; position: relative; }
+/* The board fits the box it is given, always — a board hidden below a scroll is
+   worse than a small one. What gives instead is the piece count: runJigsaw
+   measures this box and drops to six large pieces when twelve would be too
+   small to hit. */
+.play { flex: 1 1 auto; min-height: 0; position: relative; }
 .play svg {
   position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
@@ -231,16 +236,29 @@ textarea.say {
 }
 /* Shorter still: the step track and a full-size heading are furniture, and the
    thing the screen is for goes off the bottom before they do. */
-@media (max-height: 560px) {
+@media (max-height: 660px) {
   .steps { display: none; }
+  .demo-strip { display: none; }          /* demo chrome, not the app */
   h1 { font-size: var(--ernie-heading-2); margin-bottom: var(--ernie-space-1); }
   .body { padding-block: var(--ernie-space-1); }
   .text { margin-bottom: var(--ernie-space-1); }
   .text--large { font-size: var(--ernie-text); }
-  .pad-wrap { min-height: 4rem; max-height: none; }
+  .pad-wrap { min-height: 6rem; max-height: none; }
+  .topbar { padding: var(--ernie-space-1); }
+  .topbar .btn { min-height: 2.75rem; }
+  .actions { padding: var(--ernie-space-1); }
   .btn--huge { min-height: 3rem; padding-block: var(--ernie-space-1); }
-  /* The board keeps its floor and the card scrolls instead: a board small
-     enough to fit here would have pieces nobody could hit. */
+  /* Every pixel the chrome gives up here goes to the board, which is the only
+     thing on the puzzle screen anyone has to hit. */
+  .body--fixed .text { font-size: 1rem; margin-bottom: 0.25rem; }
+  /* The date options have to stay whole: half of "I'm not sure" under the
+     footer reads as "the list ends here", and that is the one answer the least
+     certain person needs. */
+  .answers { gap: var(--ernie-space-1); }
+  .answer { padding-block: var(--ernie-space-1); }
+}
+@media (max-height: 660px) and (min-width: 480px) {
+  .answers { grid-template-columns: 1fr 1fr; }
 }
 
 /* The one question the app ever asks over the top of a screen: saying no has

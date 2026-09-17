@@ -76,7 +76,7 @@ export function runChat(ui, ctx) {
       const area = el('div', { id: 'answer-area' }, body);
       ui.body(body);
       if (ctx.model) composer(it, area); else widgets(it, area);
-      ui.scrollEnd();
+      ui.scrollToAsk();
     }
 
     // --- conversational: own words, with quick answers as a shortcut
