@@ -14,14 +14,18 @@ their own last fortnight.
 It is a prototype built for a job application, in a short sitting. It is not a
 medical device and makes no diagnosis.
 
-## See it
+## Discontinued
 
-**https://ernie-o2g3.onrender.com** — password `bert`.
+ernie was an experiment and it is no longer running.
+**https://ernie-o2g3.onrender.com** now serves a notice and nothing else, and
+the site goes away on **31 October 2026**. The code, the design docs and the
+research stay here.
 
-Open it on a phone if you can; on a laptop it renders inside a phone-shaped
-frame, because that is what it is. The dark strip along the top is demo
-scaffolding, not part of the app: **Backend view** opens a panel showing exactly
-what the visit collected and what a server would derive from it.
+To see what it did, run it locally — the instructions below still work. On a
+laptop it renders inside a phone-shaped frame, because that is what it is, and
+the dark strip along the top is demo scaffolding rather than part of the app:
+**Backend view** opens a panel showing exactly what the visit collected and what
+a server would derive from it.
 
 ## The visit
 
@@ -57,10 +61,13 @@ ANTHROPIC_API_KEY=sk-ant-... npm start     # http://localhost:10000
 ```
 
 The key is optional. Without it the site still serves and the chat falls back to
-tap-only widgets, so a first deploy never fails on a missing key — but the
-conversational reading is the point of the chat, so set it if you can. There is
-more in [`packages/app/README.md`](packages/app/README.md), including the
-password on the way in and two deployment traps that cost us time.
+tap-only widgets — but the conversational reading is the point of the chat, so
+set it if you can. There is more in
+[`packages/app/README.md`](packages/app/README.md).
+
+`server.mjs` on `main` is the retirement notice, not the app. To run the real
+thing, check out the commit before it:
+`git checkout 267fc96 -- packages/app/server.mjs`.
 
 ## The repository
 
