@@ -1,5 +1,12 @@
 # ernie — the daily visit
 
+> **Retired.** The deployed service no longer runs the app: `server.mjs` serves
+> a notice saying ernie was an experiment and that the site goes away on
+> 31 October 2026. There is no password to get past and no API behind it. The
+> browser app in `public/` is untouched, and the server that served it is one
+> commit back (`git checkout 267fc96 -- packages/app/server.mjs`). Everything
+> below describes the app as it was, and still works when you run it locally.
+
 One web service: the app, and a small endpoint that reads the person's chat
 replies with Claude. Stitches together the three sketches:
 
